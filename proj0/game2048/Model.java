@@ -1,11 +1,9 @@
 package game2048;
 
-import java.util.Formatter;
-import java.util.Observable;
-
+import java.util.*;
 
 /** The state of a game of 2048.
- *  @author TODO: YOUR NAME HERE
+ *  @author TODO: aka556
  */
 public class Model extends Observable {
     /** Current contents of the board. */
@@ -106,6 +104,27 @@ public class Model extends Observable {
      *    value, then the leading two tiles in the direction of motion merge,
      *    and the trailing tile does not.
      * */
+
+    /** find the furthest location to move */
+    public int target(Tile t, int limits){
+        int site = t.row();
+        boolean stop = false;
+        while (!stop){
+            if (site < limits && board.tile(t.col(), site + 1) == null){
+                site += 1;
+            }
+            else if (site < limits && board.tile(t.col(), site + 1) != null
+            && board.tile(t.col(), site + 1).value() == t.value()){
+                site += 1;
+                break;
+            }
+            else {
+                stop = true;
+            }
+        }
+        return site;
+    }
+
     public boolean tilt(Side side) {
         boolean changed;
         changed = false;
@@ -113,6 +132,50 @@ public class Model extends Observable {
         // TODO: Modify this.board (and perhaps this.score) to account
         // for the tilt to the Side SIDE. If the board changed, set the
         // changed local variable to true.
+
+        /** if the boards that have same value had merged, then it'll be flagged */
+        Set<Tile> mergedTiles = new HashSet<>();
+        board.setViewingPerspective(side);
+
+        for (int col = 0; col < board.size(); col++) {
+            int limits = board.size() - 1;
+            for (int row = board.size() - 2; row >= 0; row--){
+                Tile t = board.tile(col, row);
+                if (t == null){
+                    continue;
+                }
+
+                int old_row = t.row();
+                int new_limits = target(t, limits);
+                if (new_limits != old_row){
+                    changed = true;
+                }
+
+                boolean has_Merged = false;
+                Tile aboveTile = board.tile(col, new_limits);
+
+                if (aboveTile != null && aboveTile.value() == t.value()
+                && !mergedTiles.contains(aboveTile)){
+                    has_Merged = board.move(col, new_limits, t);
+                    score += 2 * t.value();
+                    mergedTiles.add(aboveTile);
+                    new_limits = aboveTile.row();
+                    limits = new_limits - 1; // had merged, then the next board can't over this
+                }
+                else{
+                    board.move(col, new_limits, t);
+                    limits = new_limits; // can't merge, the limits update to new_limits
+                }
+
+//                    if (!has_Merged){
+//                        board.move(col, new_limits, t);
+//                    }
+//
+//                    /** Update the limits */
+//                    limits = Math.min(limits, new_limits - 1);
+            }
+        }
+        board.setViewingPerspective(Side.NORTH);
 
         checkGameOver();
         if (changed) {
@@ -137,7 +200,18 @@ public class Model extends Observable {
      *  Empty spaces are stored as null.
      * */
     public static boolean emptySpaceExists(Board b) {
+        /** This is a simple methods, we just need to check
+         *  whether b.tile(y, x) or b.tile(x, y) is null
+         *  (null if the place is 0)
+         *  use two loops to implement
+         */
         // TODO: Fill in this function.
+        for (int y = 0; y < b.size(); y++) {
+            for (int x = 0; x < b.size(); x++) {
+                if (b.tile(x, y) == null)
+                    return true;
+            }
+        }
         return false;
     }
 
@@ -147,7 +221,16 @@ public class Model extends Observable {
      * given a Tile object t, we get its value with t.value().
      */
     public static boolean maxTileExists(Board b) {
+        /** check one of the object b's value is equal to MAX_PIECE. */
         // TODO: Fill in this function.
+        for (int y = 0; y < b.size(); y++) {
+            for (int x = 0; x < b.size(); x++) {
+                Tile t = b.tile(x, y); // t
+                if (t != null && t.value() == MAX_PIECE){
+                    return true;
+                }
+            }
+        }
         return false;
     }
 
@@ -159,9 +242,19 @@ public class Model extends Observable {
      */
     public static boolean atLeastOneMoveExists(Board b) {
         // TODO: Fill in this function.
+        for (int y = 0; y < b.size(); y++) {
+            for (int x = 0; x < b.size(); x++) {
+                Tile t = b.tile(x, y);
+                if (t == null)
+                    return true;
+                if (x < b.size() - 1 && t.value() == b.tile(x + 1, y).value())
+                    return true;
+                if ( y < b.size() - 1 && t.value() == b.tile(x, y + 1).value())
+                    return true;
+            }
+        }
         return false;
     }
-
 
     @Override
      /** Returns the model as a string, used for debugging. */
