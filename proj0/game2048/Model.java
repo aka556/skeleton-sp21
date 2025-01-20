@@ -106,8 +106,8 @@ public class Model extends Observable {
      * */
 
     /** find the furthest location to move */
-    public int target(Tile t, int limits){
-        int site = t.row();
+    public int target(Tile t, int limits,int row){
+        int site = row;
         boolean stop = false;
         while (!stop){
             if (site < limits && board.tile(t.col(), site + 1) == null){
@@ -116,7 +116,7 @@ public class Model extends Observable {
             else if (site < limits && board.tile(t.col(), site + 1) != null
             && board.tile(t.col(), site + 1).value() == t.value()){
                 site += 1;
-                break;
+
             }
             else {
                 stop = true;
@@ -145,8 +145,8 @@ public class Model extends Observable {
                     continue;
                 }
 
-                int old_row = t.row();
-                int new_limits = target(t, limits);
+                int old_row = row;
+                int new_limits = target(t, limits, row);
                 if (new_limits != old_row){
                     changed = true;
                 }
@@ -154,25 +154,22 @@ public class Model extends Observable {
                 boolean has_Merged = false;
                 Tile aboveTile = board.tile(col, new_limits);
 
-                if (aboveTile != null && aboveTile.value() == t.value()
-                && !mergedTiles.contains(aboveTile)){
-                    has_Merged = board.move(col, new_limits, t);
+                if (board.move(col, new_limits, t)){
                     score += 2 * t.value();
-                    mergedTiles.add(aboveTile);
-                    new_limits = aboveTile.row();
-                    limits = new_limits - 1; // had merged, then the next board can't over this
+                    limits = new_limits - 1;
                 }
-                else{
-                    board.move(col, new_limits, t);
-                    limits = new_limits; // can't merge, the limits update to new_limits
-                }
-
-//                    if (!has_Merged){
-//                        board.move(col, new_limits, t);
-//                    }
-//
-//                    /** Update the limits */
-//                    limits = Math.min(limits, new_limits - 1);
+//                if (aboveTile != null && aboveTile.value() == t.value()
+//                && !mergedTiles.contains(aboveTile)){
+//                    has_Merged = board.move(col, new_limits, t);
+//                    score += 2 * t.value();
+//                    mergedTiles.add(aboveTile);
+//                    new_limits = aboveTile.row();
+//                    limits = new_limits - 1; // had merged, then the next board can't over this
+//                }
+//                else{
+//                    board.move(col, new_limits, t);
+//                    limits = new_limits; // can't merge, the limits update to new_limits
+//                }
             }
         }
         board.setViewingPerspective(Side.NORTH);
@@ -247,9 +244,11 @@ public class Model extends Observable {
                 Tile t = b.tile(x, y);
                 if (t == null)
                     return true;
-                if (x < b.size() - 1 && t.value() == b.tile(x + 1, y).value())
+                else if (x < b.size() - 1 && b.tile(x + 1, y) != null
+                && t.value() == b.tile(x + 1, y).value())
                     return true;
-                if ( y < b.size() - 1 && t.value() == b.tile(x, y + 1).value())
+                else if ( y < b.size() - 1 && b.tile(x, y + 1) != null
+                && t.value() == b.tile(x, y + 1).value())
                     return true;
             }
         }
