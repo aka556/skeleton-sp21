@@ -106,15 +106,15 @@ public class Model extends Observable {
      * */
 
     /** find the furthest location to move */
-    public int target(Tile t, int limits,int row){
-        int site = row;
+    public int target(Tile t, int limits,int col, int row){
+        int site = row; // use the t.row() would have issues
         boolean stop = false;
         while (!stop){
-            if (site < limits && board.tile(t.col(), site + 1) == null){
+            if (site < limits && board.tile(col, site + 1) == null){
                 site += 1;
             }
-            else if (site < limits && board.tile(t.col(), site + 1) != null
-            && board.tile(t.col(), site + 1).value() == t.value()){
+            else if (site < limits && board.tile(col, site + 1) != null
+            && board.tile(col, site + 1).value() == t.value()){
                 site += 1;
 
             }
@@ -122,7 +122,7 @@ public class Model extends Observable {
                 stop = true;
             }
         }
-        return site;
+        return site; // this is the furthest location that t can arrive
     }
 
     public boolean tilt(Side side) {
@@ -145,31 +145,17 @@ public class Model extends Observable {
                     continue;
                 }
 
-                int old_row = row;
-                int new_limits = target(t, limits, row);
+                int old_row = row; // use t.row() would have issues
+                int new_limits = target(t, limits, col, row);
                 if (new_limits != old_row){
                     changed = true;
                 }
 
-                boolean has_Merged = false;
-                Tile aboveTile = board.tile(col, new_limits);
-
+                /** judge whether need merge */
                 if (board.move(col, new_limits, t)){
                     score += 2 * t.value();
                     limits = new_limits - 1;
                 }
-//                if (aboveTile != null && aboveTile.value() == t.value()
-//                && !mergedTiles.contains(aboveTile)){
-//                    has_Merged = board.move(col, new_limits, t);
-//                    score += 2 * t.value();
-//                    mergedTiles.add(aboveTile);
-//                    new_limits = aboveTile.row();
-//                    limits = new_limits - 1; // had merged, then the next board can't over this
-//                }
-//                else{
-//                    board.move(col, new_limits, t);
-//                    limits = new_limits; // can't merge, the limits update to new_limits
-//                }
             }
         }
         board.setViewingPerspective(Side.NORTH);
