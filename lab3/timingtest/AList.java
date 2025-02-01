@@ -17,7 +17,7 @@ package timingtest;
 public class AList<Item> {
     private Item[] items;
     private int size;
-
+    private static final double RESIZE_FACTOR = 2.0; // set a factors
     /** Creates an empty list. */
     public AList() {
         items = (Item[]) new Object[100];
@@ -34,7 +34,7 @@ public class AList<Item> {
     /** Inserts X into the back of the list. */
     public void addLast(Item x) {
         if (size == items.length) {
-            resize(size + 1);
+            resize((int) Math.round(items.length * RESIZE_FACTOR)); // use multiplicative strategy
         }
 
         items[size] = x;

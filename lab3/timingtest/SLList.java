@@ -55,7 +55,7 @@ public class SLList<Item> {
 	}
 
 	/** returns last item in the list */
-	public Item getLast() {
+	public Item getLast(int i) {
 		IntNode p = sentinel;
 
 		/* Advance p to the end of the list. */
