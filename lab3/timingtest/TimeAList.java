@@ -37,6 +37,7 @@ public class TimeAList {
             if (p > 0){
                 testLength *= 2;
             }
+
             for (int i = 0; i < testLength; i++){
                 testList.addLast(i);
             }
