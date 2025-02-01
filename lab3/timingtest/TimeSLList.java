@@ -27,7 +27,7 @@ public class TimeSLList {
         AList<Double> times = new AList<>();
         AList<Integer> OpCounts = new AList<>();
 
-        int M = 1000;
+        int M = 10000;
         int[] testSize = {1000, 2000, 4000, 8000, 16000, 32000, 64000, 128000};
 
         for (int N: testSize){

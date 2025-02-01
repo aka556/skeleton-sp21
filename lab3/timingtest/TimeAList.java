@@ -28,21 +28,23 @@ public class TimeAList {
         AList<Double> times = new AList<>();
         AList<Integer> opCounts = new AList<>();
 
-        /** test array. */
-        int[] testSize = {1000, 2000, 4000, 8000, 16000, 32000, 64000, 128000};
+        int testLength = 1000;
 
-        for (int N: testSize){
+        for (int p = 0; p < 15; p++){
             AList<Integer> testList = new AList<>();
             Stopwatch stopwatch = new Stopwatch();
 
-            for (int i = 0; i < N; i++){
+            if (p > 0){
+                testLength *= 2;
+            }
+            for (int i = 0; i < testLength; i++){
                 testList.addLast(i);
             }
 
             double timeInSeconds = stopwatch.elapsedTime();
-            Ns.addLast(N);
+            Ns.addLast(testLength);
             times.addLast(timeInSeconds);
-            opCounts.addLast(N);
+            opCounts.addLast(testLength);
         }
         printTimingTable(Ns, times, opCounts);
     }
