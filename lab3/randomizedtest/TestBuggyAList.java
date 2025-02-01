@@ -10,7 +10,7 @@ import static org.junit.Assert.*;
 public class TestBuggyAList {
   // YOUR TESTS HERE
 
-    /** @Test
+    @Test
     public void testThreeAddThreeRemove() {
         BuggyAList<Integer> buggy =  new BuggyAList<>();
         AListNoResizing <Integer> normal = new AListNoResizing<>();
@@ -29,7 +29,7 @@ public class TestBuggyAList {
         assertEquals(buggy.removeLast(), normal.removeLast());
         assertEquals(buggy.removeLast(), normal.removeLast());
         assertEquals(buggy.removeLast(), normal.removeLast());
-    } */
+    }
 
     @Test
     public void randomizedTest() {
