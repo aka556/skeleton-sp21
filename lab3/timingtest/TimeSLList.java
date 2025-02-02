@@ -27,23 +27,25 @@ public class TimeSLList {
         AList<Double> times = new AList<>();
         AList<Integer> OpCounts = new AList<>();
 
-        int M = 1000000;
-        int[] testSize = {1000, 2000, 4000, 8000, 16000, 32000, 64000, 128000, 256000};
+        int testSize = 1000;
 
-        for (int N: testSize){
+        for (int p = 0; p < 8; p++) {
+            if (p > 0) {
+                testSize *= 2;
+            }
+            Ns.addLast(testSize);
             SLList<Integer> testList = new SLList<>();
-
-            for (int i = 0; i < N; i += 1){
+            for (int i = 0; i < testSize; i++) {
                 testList.addLast(i);
             }
 
+            int M = 10000;
             Stopwatch stopwatch = new Stopwatch();
-            for (int i = 0; i < M; i += 1){
-                testList.getLast(i);
+            for (int i = 0; i < M; i++) {
+                testList.getLast();
             }
 
             double timeInSeconds = stopwatch.elapsedTime();
-            Ns.addLast(N);
             times.addLast(timeInSeconds);
             OpCounts.addLast(M);
         }
