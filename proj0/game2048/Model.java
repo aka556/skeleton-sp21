@@ -106,7 +106,7 @@ public class Model extends Observable {
      * */
 
     /** find the furthest location to move */
-    public int target(Tile t, int limits,int col, int row){
+    public int target(Tile t, int limits, int col, int row){
         int site = row; // use the t.row() would have issues
         boolean stop = false;
         while (!stop){
