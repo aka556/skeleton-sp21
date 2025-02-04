@@ -77,7 +77,7 @@ public class SLList<Item> {
 
 		return p.item;
 
-//		return last.item; // now, last is the end of List
+//		return last.item; // now, last is the end of List and the time complex is O(1)
 	}
 
 
