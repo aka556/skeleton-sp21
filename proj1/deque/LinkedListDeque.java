@@ -5,14 +5,14 @@ import java.util.Deque;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-public class LinkedListDeque<Item> {
+public class LinkedListDeque<T> {
     private class IntNode {
-        public Item item;
+        public T item;
         public IntNode next;
         public IntNode prev;
 
         /** Construct function, init the linked construction. */
-        public IntNode(Item i, IntNode p, IntNode n) {
+        public IntNode(T i, IntNode p, IntNode n) {
             item = i;
             prev = p;
             next = n;
@@ -36,7 +36,7 @@ public class LinkedListDeque<Item> {
     }
 
     /** Adds an item of type T to the front of the deque. */
-    public void addFirst(Item x) {
+    public void addFirst(T x) {
         IntNode newNode = new IntNode(x, sentinel, sentinel.next);
         sentinel.next.prev = newNode;
         sentinel.next = newNode;
@@ -48,7 +48,7 @@ public class LinkedListDeque<Item> {
     }
 
     /** Adds an item of type T to the back of the deque. */
-    public void addLast(Item x) {
+    public void addLast(T x) {
         IntNode newNode = new IntNode(x, sentinel.prev, sentinel);
         sentinel.prev.next = newNode;
         sentinel.prev = newNode;
@@ -70,29 +70,32 @@ public class LinkedListDeque<Item> {
     }
 
     /** Removes and returns the item at the front of the deque. */
-    public Item removeFirst() {
-        if (size == 0) {
-            return null;
-        }
+    public T removeFirst() {
+//        if (size == 0) {
+//            return null;
+//        }
 
-        Item value = head.item;
+        T value = head.item;
         head = head.next;
 
         if (size == 1) {
             tail = sentinel;
         }
         sentinel.next = head;
-        head.prev = sentinel;
+        if (head != null) {
+            head.prev = sentinel;
+        }
         size -= 1;
         return value;
     }
 
     /** Removes and returns the item at the back of the deque. */
-    public Item removeLast() {
-        if (size == 0) {
-            return null;
-        }
-        Item value = tail.item;
+    public T removeLast() {
+//        if (size == 0) {
+//            return null;
+//        }
+
+        T value = tail.item;
         tail = tail.prev;
         if (size == 1) {
             head = sentinel;
@@ -115,7 +118,7 @@ public class LinkedListDeque<Item> {
     }
 
     /** Gets the item at the given index. */
-    public Item get(int index) {
+    public T get(int index) {
         if (index < 0 || index >= size) {
             return null;
         }
@@ -128,7 +131,7 @@ public class LinkedListDeque<Item> {
     }
 
     /** Same as get, but uses recursion. */
-    public Item getRecursive(int index) {
+    public T getRecursive(int index) {
         if (index < 0 || index >= size) {
             return null;
         }
@@ -137,7 +140,7 @@ public class LinkedListDeque<Item> {
     }
 
     /** The helper method for recursive. */
-    private Item getRecursiveHelper(IntNode current, int index) {
+    private T getRecursiveHelper(IntNode current, int index) {
         if (index == 0) {
             return current.item;
         }
@@ -145,12 +148,12 @@ public class LinkedListDeque<Item> {
     }
 
     /** The Deque objects we’ll make are iterable, so we must provide this method to return an iterator. */
-    public Iterator<Item> iterator() {
+    public Iterator<T> iterator() {
         return new DequeIterator();
     }
 
     /** DequeIterator implements the Iterator<Item> interface */
-    private class DequeIterator implements Iterator<Item> {
+    private class DequeIterator implements Iterator<T> {
         private IntNode current = head;
 
         @Override
@@ -159,11 +162,11 @@ public class LinkedListDeque<Item> {
         }
 
         @Override
-        public Item next() {
+        public T next() {
             if (!hasNext()) {
                 throw new NoSuchElementException();
             }
-            Item item = current.item;
+            T item = current.item;
             current = current.next;
             return item;
         }
