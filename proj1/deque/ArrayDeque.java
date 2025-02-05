@@ -65,7 +65,7 @@ public class ArrayDeque<Item> {
 
     /** Removes and returns the item at the front of the deque. */
     public Item removeFirst() {
-        if (size == 0) {
+        if (isEmpty()) {
             return null;
         }
 
@@ -74,15 +74,13 @@ public class ArrayDeque<Item> {
         front = (front + 1) % items.length;
         size -= 1;
 
-        if (items.length >= 16 && size < items.length / 4) {
-            resize(items.length / 2);
-        }
+        shrinkSize();
         return removeItem;
     }
 
     /** Removes and returns the item at the back of the deque. */
     public Item removeLast() {
-        if (size == 0) {
+        if (isEmpty()) {
             return null;
         }
 
@@ -91,10 +89,17 @@ public class ArrayDeque<Item> {
         items[rear] = null;
         size -= 1;
 
-        if (items.length >= 16 && size < items.length / 4) {
-            resize(items.length / 2);
-        }
+        shrinkSize();
         return removeItem;
+    }
+
+    /** When removed the items, adjust the size of items. */
+    public void shrinkSize() {
+        if (isEmpty()) {
+            resize(DEFAULT_CAPACITY);
+        } else if (items.length / 4 > size && size > 4) {
+            resize(size * 2);
+        }
     }
 
     /** Prints the items in the deque from first to last, separated by a space. */
@@ -103,8 +108,10 @@ public class ArrayDeque<Item> {
             return;
         }
 
+        int currentIndex = front;
         for (int i = 0; i < size; i++) {
-            System.out.print(items[i] + " ");
+            System.out.print(items[currentIndex] + " ");
+            currentIndex = (currentIndex + 1) % items.length;
         }
         System.out.println();
     }
@@ -162,7 +169,4 @@ public class ArrayDeque<Item> {
         return true;
     }
 
-//    public static void main(String[] args) {
-//        ArrayDeque<Integer> deque = new ArrayDeque<Integer>();
-//    }
 }
