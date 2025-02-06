@@ -1,15 +1,15 @@
 package deque;
 
-public interface Deque<Item> {
-    void addFirst(Item item);
+public interface Deque<T> {
+    void addFirst(T item);
 
-    void addLast(Item item);
+    void addLast(T item);
 
-    Item removeFirst();
+    T removeFirst();
 
-    Item removeLast();
+    T removeLast();
 
-    Item get(int index);;
+    T get(int index);;
 
     int size();
 

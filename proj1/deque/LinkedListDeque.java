@@ -1,17 +1,16 @@
 package deque;
 
-import javax.swing.text.html.HTMLDocument;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-public class LinkedListDeque<Item> implements Deque<Item> {
+public class LinkedListDeque<T> implements Deque<T>, Iterable<T> {
     private class IntNode {
-        public Item item;
-        public IntNode next;
-        public IntNode prev;
+        private T item;
+        private IntNode next;
+        private IntNode prev;
 
         /** Construct function, init the linked construction. */
-        public IntNode(Item i, IntNode p, IntNode n) {
+        public IntNode(T i, IntNode p, IntNode n) {
             item = i;
             prev = p;
             next = n;
@@ -41,7 +40,7 @@ public class LinkedListDeque<Item> implements Deque<Item> {
     }
 
     /** Adds an item of type T to the front of the deque. */
-    public void addFirst(Item x) {
+    public void addFirst(T x) {
         IntNode newNode = new IntNode(x, sentinel, sentinel.next);
         sentinel.next.prev = newNode;
         sentinel.next = newNode;
@@ -53,7 +52,7 @@ public class LinkedListDeque<Item> implements Deque<Item> {
     }
 
     /** Adds an item of type T to the back of the deque. */
-    public void addLast(Item x) {
+    public void addLast(T x) {
         IntNode newNode = new IntNode(x, sentinel.prev, sentinel);
         sentinel.prev.next = newNode;
         sentinel.prev = newNode;
@@ -70,12 +69,12 @@ public class LinkedListDeque<Item> implements Deque<Item> {
     }
 
     /** Removes and returns the item at the front of the deque. */
-    public Item removeFirst() {
+    public T removeFirst() {
         if (isEmpty()) {
             return null;
         }
 
-        Item value = head.item;
+        T value = sentinel.next.item;
 
         if (size == 1) {
             head = sentinel;
@@ -91,12 +90,12 @@ public class LinkedListDeque<Item> implements Deque<Item> {
     }
 
     /** Removes and returns the item at the back of the deque. */
-    public Item removeLast() {
+    public T removeLast() {
         if (isEmpty()) {
             return null;
         }
 
-        Item value = sentinel.prev.item;
+        T value = sentinel.prev.item;
 
         if (size == 1) {
             head = sentinel;
@@ -124,7 +123,7 @@ public class LinkedListDeque<Item> implements Deque<Item> {
     }
 
     /** Gets the item at the given index. */
-    public Item get(int index) {
+    public T get(int index) {
         if (index < 0 || index >= size) {
             return null;
         }
@@ -137,7 +136,7 @@ public class LinkedListDeque<Item> implements Deque<Item> {
     }
 
     /** Same as get, but uses recursion. */
-    public Item getRecursive(int index) {
+    public T getRecursive(int index) {
         if (index < 0 || index >= size) {
             return null;
         }
@@ -146,20 +145,22 @@ public class LinkedListDeque<Item> implements Deque<Item> {
     }
 
     /** The helper method for recursive. */
-    private Item getRecursiveHelper(IntNode current, int index) {
+    private T getRecursiveHelper(IntNode current, int index) {
         if (index == 0) {
             return current.item;
         }
         return getRecursiveHelper(current.next, index - 1);
     }
 
-    /** The Deque objects we’ll make are iterable, so we must provide this method to return an iterator. */
-    public Iterator<Item> iterator() {
+    /** The Deque objects we’ll make are iterable,
+     *  so we must provide this method to return an iterator.
+     * */
+    public Iterator<T> iterator() {
         return new DequeIterator();
     }
 
     /** DequeIterator implements the Iterator<Item> interface */
-    private class DequeIterator implements Iterator<Item> {
+    private class DequeIterator implements Iterator<T> {
         private IntNode current = sentinel.next;
 
         @Override
@@ -168,11 +169,11 @@ public class LinkedListDeque<Item> implements Deque<Item> {
         }
 
         @Override
-        public Item next() {
+        public T next() {
             if (!hasNext()) {
                 throw new NoSuchElementException();
             }
-            Item item = current.item;
+            T item = current.item;
             current = current.next;
             return item;
         }

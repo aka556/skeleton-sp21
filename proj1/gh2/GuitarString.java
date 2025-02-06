@@ -1,11 +1,10 @@
 package gh2;
 
-import deque.ArrayDeque;
 import deque.Deque;
 import deque.LinkedListDeque;
 
 
-//Note: This file will not compile until you complete the Deque implementations
+
 public class GuitarString {
     /** Constants. Do not change. In case you're curious, the keyword final
      * means the values cannot be changed at runtime. We'll discuss this and
@@ -18,7 +17,7 @@ public class GuitarString {
 
     /* Create a guitar string of the given frequency.  */
     public GuitarString(double frequency) {
-        buffer = new LinkedListDeque<>(); // can use ArrayDeque to implement, but we need to track the front
+        buffer = new LinkedListDeque<>();
         int capacity = (int) Math.round(SR / frequency);
         for (int i = 0; i < capacity; i++) {
             buffer.addLast(0.0);
@@ -44,7 +43,7 @@ public class GuitarString {
         }
 
         double firstValue = buffer.removeFirst();
-        double secondValue = buffer.get(0); // should track the front, like buffer.get(front), but front is private
+        double secondValue = buffer.get(0);
         double newValue = DECAY * 0.5 * (firstValue + secondValue);
         buffer.addLast(newValue);
     }

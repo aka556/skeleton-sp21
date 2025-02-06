@@ -249,7 +249,17 @@ public class LinkedListDequeTest {
                 myList.getRecursive(randIndex);
             }
         }
+    }
 
+    @Test
+    public void randomTest() {
+        LinkedListDeque<Integer> myList = new LinkedListDeque<>();
 
+        myList.addFirst(0);
+        myList.removeFirst();
+        myList.addFirst(2);
+        myList.addFirst(3);
+        myList.addFirst(4);
+        myList.removeFirst();
     }
 }
