@@ -18,7 +18,7 @@ public class GuitarString {
 
     /* Create a guitar string of the given frequency.  */
     public GuitarString(double frequency) {
-        buffer = new LinkedListDeque<>();
+        buffer = new LinkedListDeque<>(); // can use ArrayDeque to implement, but we need to track the front
         int capacity = (int) Math.round(SR / frequency);
         for (int i = 0; i < capacity; i++) {
             buffer.addLast(0.0);
@@ -44,7 +44,7 @@ public class GuitarString {
         }
 
         double firstValue = buffer.removeFirst();
-        double secondValue = buffer.get(0);
+        double secondValue = buffer.get(0); // should track the front, like buffer.get(front), but front is private
         double newValue = DECAY * 0.5 * (firstValue + secondValue);
         buffer.addLast(newValue);
     }
