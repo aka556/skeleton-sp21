@@ -250,6 +250,6 @@ public class LinkedListDequeTest {
             }
         }
 
-        
+
     }
 }

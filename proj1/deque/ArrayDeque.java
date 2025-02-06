@@ -2,15 +2,15 @@ package deque;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-public class ArrayDeque<Item> {
-    private Item[] items;
+public class ArrayDeque<Item> implements Deque<Item> {
+    protected Item[] items;
     private int size;
     private static final int DEFAULT_CAPACITY = 8;
     private static final double RESIZE_FACTOR = 2.0;
 
     /** The pointer that point the first and end element. */
-    private int front;
-    private int rear;
+    protected int front;
+    protected int rear;
 
     /** Creates an empty array deque. */
     public ArrayDeque() {
@@ -51,11 +51,6 @@ public class ArrayDeque<Item> {
         items[rear] = item;
         rear = (rear + 1) % items.length;
         size += 1;
-    }
-
-    /** Returns true if deque is empty, false otherwise. */
-    public boolean isEmpty() {
-        return size == 0;
     }
 
     /** Returns the number of items in the deque. */
@@ -122,6 +117,11 @@ public class ArrayDeque<Item> {
             return null;
         }
         return items[index];
+    }
+
+    /** Get the front. */
+    public int getFront() {
+        return this.front;
     }
 
     /** he Deque objects we’ll make are iterable, so we must provide this method to return an iterator. */

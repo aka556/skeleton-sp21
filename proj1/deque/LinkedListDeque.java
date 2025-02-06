@@ -1,11 +1,10 @@
 package deque;
 
 import javax.swing.text.html.HTMLDocument;
-import java.util.Deque;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-public class LinkedListDeque<Item> {
+public class LinkedListDeque<Item> implements Deque<Item> {
     private class IntNode {
         public Item item;
         public IntNode next;
@@ -30,7 +29,6 @@ public class LinkedListDeque<Item> {
     /** Linked Construction. */
     private IntNode sentinel;
     private IntNode head; // used for point the headNode
-//    private IntNode tail; // used for point the tailNode
     private int size;
 
     /** Creates an empty linked list deque. */
@@ -39,7 +37,6 @@ public class LinkedListDeque<Item> {
         sentinel.prev = sentinel;
         sentinel.next = sentinel;
         head = sentinel;
-//        tail = sentinel;
         size = 0;
     }
 
@@ -50,7 +47,6 @@ public class LinkedListDeque<Item> {
         sentinel.next = newNode;
 
         if (size == 0) {
-//            tail = newNode;
             head = newNode;
         }
         size += 1;
@@ -64,14 +60,8 @@ public class LinkedListDeque<Item> {
 
         if (size == 0) {
             head = newNode;
-//            tail = newNode;
         }
         size += 1;
-    }
-
-    /**  Returns true if deque is empty, false otherwise. */
-    public boolean isEmpty() {
-        return size == 0;
     }
 
     /** Returns the number of items in the deque. */
