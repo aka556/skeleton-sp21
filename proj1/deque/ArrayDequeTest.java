@@ -25,8 +25,6 @@ public class ArrayDequeTest {
         ad1.addLast("CS61C");
         assertEquals("Should be size 3", 3, ad1.size());
 
-        System.out.println("Printing out Deque: ");
-        ad1.printDeque();
     }
 
     @Test
