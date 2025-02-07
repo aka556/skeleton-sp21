@@ -1,6 +1,7 @@
 package deque;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 
 public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
     protected T[] items;
@@ -160,11 +161,11 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof ArrayDeque)) {
+        if (!(o instanceof ArrayDeque<?>)) {
             return false;
         }
 
-        ArrayDeque other = (ArrayDeque) o;
+        ArrayDeque<?> other = (ArrayDeque<?>) o;
         if (size != other.size) {
             return false;
         }
@@ -172,11 +173,10 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
             int thisIndex = (front + i) % items.length;
             int otherIndex = (other.front + i) % other.items.length;
 
-            if (items[thisIndex] != other.items[otherIndex]) {
+            if (!Objects.equals(items[thisIndex], other.items[otherIndex])) {
                 return false;
             }
         }
         return true;
     }
-
 }
