@@ -256,10 +256,12 @@ public class LinkedListDequeTest {
         LinkedListDeque<Integer> myList = new LinkedListDeque<>();
 
         myList.addFirst(0);
-        myList.removeFirst();
-        myList.addFirst(2);
+        myList.addLast(1);
+        myList.addLast(2);
         myList.addFirst(3);
-        myList.addFirst(4);
+        myList.addLast(4);
+
+        myList.removeFirst();
         myList.removeFirst();
     }
 }

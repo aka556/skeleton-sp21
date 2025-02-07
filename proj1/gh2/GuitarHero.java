@@ -5,7 +5,7 @@ import edu.princeton.cs.algs4.StdDraw;
 
 public class GuitarHero {
     public static final String KEYBOARD = "q2we4r5ty7u8i9op-[=zxdcfvgbnjmk,.;/' ";
-    public static int KEY_AMOUNTS = KEYBOARD.length();
+    private static final int KEY_AMOUNTS = KEYBOARD.length();
 
     public static void main(String[] args) {
         GuitarString[] guitarStrings = new GuitarString[KEY_AMOUNTS];

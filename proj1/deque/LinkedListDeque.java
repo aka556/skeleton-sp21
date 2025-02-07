@@ -10,7 +10,7 @@ public class LinkedListDeque<T> implements Deque<T>, Iterable<T> {
         private IntNode prev;
 
         /** Construct function, init the linked construction. */
-        public IntNode(T i, IntNode p, IntNode n) {
+        private IntNode(T i, IntNode p, IntNode n) {
             item = i;
             prev = p;
             next = n;
@@ -27,7 +27,6 @@ public class LinkedListDeque<T> implements Deque<T>, Iterable<T> {
 
     /** Linked Construction. */
     private IntNode sentinel;
-    private IntNode head; // used for point the headNode
     private int size;
 
     /** Creates an empty linked list deque. */
@@ -35,7 +34,6 @@ public class LinkedListDeque<T> implements Deque<T>, Iterable<T> {
         sentinel = new IntNode(null, null, null); // create a sentinel node
         sentinel.prev = sentinel;
         sentinel.next = sentinel;
-        head = sentinel;
         size = 0;
     }
 
@@ -45,9 +43,6 @@ public class LinkedListDeque<T> implements Deque<T>, Iterable<T> {
         sentinel.next.prev = newNode;
         sentinel.next = newNode;
 
-        if (size == 0) {
-            head = newNode;
-        }
         size += 1;
     }
 
@@ -57,9 +52,6 @@ public class LinkedListDeque<T> implements Deque<T>, Iterable<T> {
         sentinel.prev.next = newNode;
         sentinel.prev = newNode;
 
-        if (size == 0) {
-            head = newNode;
-        }
         size += 1;
     }
 
@@ -76,14 +68,8 @@ public class LinkedListDeque<T> implements Deque<T>, Iterable<T> {
 
         T value = sentinel.next.item;
 
-        if (size == 1) {
-            head = sentinel;
-            sentinel.next = sentinel.prev = sentinel;
-        } else {
-            head = head.next;
-            sentinel.next = head;
-            head.prev = sentinel;
-        }
+        sentinel.next = sentinel.next.next;
+        sentinel.next.prev = sentinel;
 
         size -= 1;
         return value;
@@ -97,10 +83,6 @@ public class LinkedListDeque<T> implements Deque<T>, Iterable<T> {
 
         T value = sentinel.prev.item;
 
-        if (size == 1) {
-            head = sentinel;
-            sentinel.next = sentinel.prev = sentinel;
-        }
         sentinel.prev = sentinel.prev.prev;
         sentinel.prev.next = sentinel;
 
@@ -193,8 +175,8 @@ public class LinkedListDeque<T> implements Deque<T>, Iterable<T> {
         if (this.size != other.size) {
             return false;
         }
-        IntNode current = this.head.next;
-        IntNode otherCurrent = (IntNode) other.head.next;
+        IntNode current = this.sentinel.next;
+        IntNode otherCurrent = (IntNode) other.sentinel.next;
         while (current != sentinel) {
             if (!current.item.equals(otherCurrent.item)) {
                 return false;
