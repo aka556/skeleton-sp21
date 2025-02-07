@@ -116,7 +116,8 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
         if (index < 0 || index >= size) {
             return null;
         }
-        return items[index];
+        int actualIndex = (front + index) % items.length;
+        return items[actualIndex];
     }
 
     /** Get the front. */
@@ -152,6 +153,13 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
 
     /** Returns whether or not the parameter o is equal to the Deque. */
     public boolean equals(Object o) {
+        if (o == null) {
+            return false;
+        }
+
+        if (this == o) {
+            return true;
+        }
         if (!(o instanceof ArrayDeque)) {
             return false;
         }
