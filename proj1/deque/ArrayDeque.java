@@ -4,14 +4,14 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 
 public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
-    protected T[] items;
+    private T[] items;
     private int size;
     private static final int DEFAULT_CAPACITY = 8;
     private static final double RESIZE_FACTOR = 2.0;
 
     /** The pointer that point the first and end element. */
-    protected int front;
-    protected int rear;
+    private int front;
+    private int rear;
 
     /** Creates an empty array deque. */
     public ArrayDeque() {
@@ -90,7 +90,7 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
     }
 
     /** When removed the items, adjust the size of items. */
-    public void shrinkSize() {
+    private void shrinkSize() {
         if (isEmpty()) {
             resize(DEFAULT_CAPACITY);
         } else if (items.length / 4 > size && size > 4) {
@@ -119,11 +119,6 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
         }
         int actualIndex = (front + index) % items.length;
         return items[actualIndex];
-    }
-
-    /** Get the front. */
-    public int getFront() {
-        return this.front;
     }
 
     /** he Deque objects we’ll make are iterable,
