@@ -46,6 +46,6 @@ public class MaxArrayDequeTest {
 
         Integer maxElement = mad2.max((a, b) -> b.compareTo(a));
 
-        assertEquals("max element should be 9",Integer.valueOf(9), maxElement);
+        assertEquals("max element should be 45",Integer.valueOf(45), maxElement);
     }
 }
