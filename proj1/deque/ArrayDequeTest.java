@@ -1,10 +1,7 @@
 package deque;
 
 import edu.princeton.cs.algs4.StdRandom;
-import net.sf.saxon.ma.arrays.ArrayFunctionSet;
 import org.junit.Test;
-import java.lang.reflect.Array;
-import java.util.Random;
 
 import static org.junit.Assert.*;
 
