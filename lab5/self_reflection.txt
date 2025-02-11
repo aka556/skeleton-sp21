@@ -4,27 +4,30 @@ ArrayDeque:
 
 Q: Give an example of at least one idea from the staff solution that would have made your solution better (if any).
 
-A: 
+A: For example, some useful tests methods give me many of help. Also, add basic cases intelligently are more useful method for me to fix my code buggies.
 
 Q: What's something you felt proud of in your code, if anything?
 
-A:
+A: For me, something I felt pound of my code is I used two pointer(front and rear) to point the head and the end of ArrayList by constructed an circle array, 
+   so that I can save times. But the issue is it spend more momery, and easy to cause little mix.
 
 Q: What's something that was particularly inelegant in your code, if anything?
 
-A:
+A: I think some functions name are not elegant and additional explains are not exact.
 
 Q: What did you learn by talking to your partner about writing ArrayDeque?
 
-A:
+A: I learned I can not use two pointers but other elegant methds and how to think a problems in ohter idea.The most important is I learned iterate my code so 
+   that it can be more strength.
 
 Q: What do you wish you would have known before writing ArrayDeque, if anything?
 
-A:
+A: I wish I would use array more efficent and understand array more deeply. For example, I wanna realize circle array and how to implement it. At the final, 
+   I did it.
 
 Q: If you wrote ArrayDeque again, what would you do differently, if anything?
 
-A:
+A: I would not use two pointers and use more efficent methods and make my code more elegant.
 
 -----
 
@@ -32,27 +35,33 @@ LinkedListDeque:
 
 Q: Give an example of at least one idea from the staff solution that would have made your solution better (if any).
 
-A: 
+A: For example, using a sentinel node instead of handling edge cases separately made the implementation cleaner and reduced unnecessary conditional checks. 
+   This would have made my solution more elegant and easier to maintain.
 
 Q: What's something you felt proud of in your code, if anything?
 
-A:
+A: I felt proud that I successfully implemented a doubly linked list with both prev and next pointers, ensuring constant-time operations for adding and 
+   removing elements at both ends. This approach improved efficiency and followed the deque structure well.
 
 Q: What's something that was particularly inelegant in your code, if anything?
 
-A:
+A: Some of my pointer manipulations were messy and error-prone, leading to potential null pointer exceptions. Additionally, my code had some redundant checks 
+   that could have been avoided with a better understanding of linked list operations.
 
 Q: What did you learn by talking to your partner about writing LinkedListDeque?
 
-A:
+A: I learned that using a sentinel node helps simplify the logic and reduces the need for special cases when adding or removing elements. Also, I realized 
+   that careful handling of pointers is crucial to avoid memory leaks or unintended references.
 
 Q: What do you wish you would have known before writing LinkedListDeque, if anything?
 
-A:
+A: I wish I had a deeper understanding of sentinel nodes and their benefits before starting the implementation. It would have helped me write a cleaner and 
+   more efficient LinkedListDeque without struggling with boundary conditions.
 
 Q: If you wrote LinkedListDeque again, what would you do differently, if anything?
 
-A:
+A: I would use a sentinel node from the beginning and focus on making my pointer updates more structured and less error-prone. I would also write more test 
+   cases early on to catch potential mistakes sooner.
 
 -----
 
@@ -60,4 +69,4 @@ Meta:
 
 Q: Did you like this design review process? Anything we should do differently next time?
 
-A: 
+A: Yes, I like this! Because it give me an idea that wo can find some more useful methods to solve problems and elegant codes.
