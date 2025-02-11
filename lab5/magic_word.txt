@@ -1,0 +1,15 @@
+ArrayDeque Feedback:
+
+1. Good job utilizing a circular array with two pointers for efficiency. However, consider ways to reduce memory usage and avoid unnecessary complexity.
+2. Be mindful of function naming and documentation—clear names and explanations will make your code easier to maintain.
+3. Testing is not just about fixing bugs but also about improving code design. Try to leverage well-structured test cases earlier in development.
+4. Iteration is key—seek more elegant solutions rather than just functional ones.
+
+LinkedListDeque Feedback:
+
+1. Implementing a doubly linked list was a strong choice. However, using a sentinel node could have simplified boundary cases.
+2. Be cautious with pointer manipulations—they can be error-prone. Strive for clean, structured updates to prevent null references.
+3. Consider writing more test cases upfront to catch edge cases early and improve code robustness.
+4 .Aim for code elegance—efficiency is important, but clarity and maintainability matter just as much.
+
+Keep refining your approach, and great work so far! 
