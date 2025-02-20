@@ -40,7 +40,7 @@ public class Dog implements Serializable{ // TODO
      */
     public static Dog fromFile(String name) {
         // TODO (hint: look at the Utils file)
-        File file = new File(DOG_FOLDER, name);
+        File file = new File(DOG_FOLDER, name); // file is the subFile of DOG_FOLDER
         return readObject(file, Dog.class);
     }
 
