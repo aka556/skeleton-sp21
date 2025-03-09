@@ -651,7 +651,7 @@ public class Repository {
             String filename = entry.getKey();
             String blobID = entry.getValue();
             File file = join(CWD, filename);
-            Blobs blob = readObject(join(BLOBS_DIR, filename), Blobs.class);
+            Blobs blob = readObject(join(BLOBS_DIR, blobID), Blobs.class);
 
             writeObject(file, blob.getContent());
         }
