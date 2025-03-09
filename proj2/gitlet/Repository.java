@@ -202,19 +202,21 @@ public class Repository {
         }
 
         Commit head = getHead();
-        Stage stage = readStage();
+        commitWith(message, List.of(head));
+    }
 
+    public void commitWith(String message, List<Commit> parents) {
+        Stage stage = readStage();
         if (stage.isEmpty()) {
-            System.out.println("No changes added in the commit.");
+            System.out.println("No changes added to the commit.");
             System.exit(0);
         }
 
-        Commit newCommit = new Commit(message, List.of(head), stage);
+        Commit commit = new Commit(message, parents, stage);
         clearStage(stage);
+        writeCommitToFile(commit);
 
-        writeCommitToFile(newCommit);
-
-        String commitID = newCommit.getID();
+        String commitID = commit.getID();
         String branchName = getHeadBranchName();
         File branch = getBranchFile(branchName);
         writeContents(branch, commitID);
@@ -505,18 +507,18 @@ public class Repository {
 
         List<String> untrackedFile = getUntrackedFiles();
         for (String filename : untrackedFile) {
-            if (remove.contains(filename) || rewrite.contains(filename) ||
-                    conflict.contains(filename)) {
-                System.out.println("There is an untracked file in the way; " +
-                        "delete it, or add and commit it first.");
+            if (remove.contains(filename) || rewrite.contains(filename)
+                    || conflict.contains(filename)) {
+                System.out.println("There is an untracked file in the way; "
+                        + "delete it, or add and commit it first.");
                 System.exit(0);
             }
         }
 
         if (!remove.isEmpty()) {
-           for (String filename : remove) {
+            for (String filename : remove) {
                rm(filename);
-           }
+            }
         }
 
         if (!rewrite.isEmpty()) {
@@ -578,23 +580,6 @@ public class Repository {
             j += 1;
         }
         return buffer.toString();
-    }
-
-    public void commitWith(String message, List<Commit> parents) {
-        Stage stage = readStage();
-        if (stage.isEmpty()) {
-            System.out.println("No changes added to the commit.");
-            System.exit(0);
-        }
-
-        Commit commit = new Commit(message, parents, stage);
-        clearStage(stage);
-        writeCommitToFile(commit);
-
-        String commitID = commit.getID();
-        String branchName = getHeadBranchName();
-        File branch = getBranchFile(branchName);
-        writeContents(branch, commitID);
     }
 
     public String getConflictContent(String head, String other) {
@@ -705,8 +690,8 @@ public class Repository {
             String blobID = new Blobs(filename, CWD).getId();
             String otherID = blobs.getOrDefault(filename, "");
             if (!otherID.equals(blobID)) {
-                System.out.println("There is an untracked file in the way; delete it, " +
-                        "or add and commit it first.");
+                System.out.println("There is an untracked file in the way; delete it, "
+                        + "or add and commit it first.");
                 System.exit(0);
             }
         }
@@ -717,7 +702,7 @@ public class Repository {
         List<String> stageFiles = readStage().getAllStagedFileName();
         Set<String> headFiles = getHead().getBlobs().keySet();
 
-        for(String filename : plainFilenamesIn(CWD)) {
+        for (String filename : plainFilenamesIn(CWD)) {
             if (!stageFiles.contains(filename) && !headFiles.contains(filename)) {
                 ans.add(filename);
             }
@@ -763,7 +748,7 @@ public class Repository {
                 e.printStackTrace();
             }
         }
-        writeStage(stage);
+        writeStage(new Stage());
     }
 
     public Commit getCommitFromID(String commitID) {
