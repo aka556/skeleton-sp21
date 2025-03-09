@@ -8,15 +8,12 @@ import java.util.*;
 import java.util.Set;
 
 /** Represents a gitlet repository.
- *  TODO: It's a good idea to give a description here of what else this Class
  *  does at a high level.
  *
  *  @author XiaoYu
  */
 public class Repository {
     /**
-     * TODO: add instance variables here.
-     *
      * List all instance variables of the Repository class here with a useful
      * comment above them describing what that variable represents and how that
      * variable is used. We've provided two examples for you.
@@ -42,15 +39,15 @@ public class Repository {
     public static final File GITLET_DIR = join(CWD, ".gitlet");
 
     /* TODO: fill in the rest of this class. */
-    public File BLOBS_DIR;
-    public File COMMITS_DIR;
-    public File REFS_DIR;
-    public File HEAD_DIR;
-    public File REMOTE_DIR;
-    public File HEAD;
-    public File STAGING_DIR;
-    public File STAGE;
-    public File CONFIG;
+    private File BLOBS_DIR;
+    private File COMMITS_DIR;
+    private File REFS_DIR;
+    private File HEAD_DIR;
+    private File REMOTE_DIR;
+    private File HEAD;
+    private File STAGING_DIR;
+    private File STAGE;
+    private File CONFIG;
 
     public Repository() {
         configDIRS();
@@ -72,7 +69,8 @@ public class Repository {
     /** Init the persistence. */
     public void init() {
         if (isGitletInitialized()) {
-            System.out.println("A Gitlet version-control system already exists in the current directory.");
+            System.out.println("A Gitlet version-control system " +
+                               "already exists in the current directory.");
             System.exit(0);
         }
 
@@ -100,7 +98,8 @@ public class Repository {
 
         // create master branch
         String branchName = "master";
-        writeContents(HEAD, branchName); // write branchName into HEAD,represents the current branch is master
+        // write branchName into HEAD,represents the current branch is master
+        writeContents(HEAD, branchName);
         File master = join(HEAD_DIR, branchName); // create file path of master branch
         writeContents(master, id); // write current id into master
 
@@ -290,11 +289,12 @@ public class Repository {
         }
         buffer.append("\n");
 
-        buffer.append("=== Mofications Not Staged For Commit ===\n");
+        buffer.append("=== Modifications Not Staged For Commit ===\n");
         buffer.append("\n");
 
         buffer.append("=== Untracked Files ===\n");
         buffer.append("\n");
+
 
         System.out.println(buffer);
     }
@@ -505,8 +505,10 @@ public class Repository {
 
         List<String> untrackedFile = getUntrackedFiles();
         for (String filename : untrackedFile) {
-            if (remove.contains(filename) || rewrite.contains(filename) || conflict.contains(filename)) {
-                System.out.println("There is an untracked file in the way; delete it, or add and commit it first.");
+            if (remove.contains(filename) || rewrite.contains(filename) ||
+                    conflict.contains(filename)) {
+                System.out.println("There is an untracked file in the way; " +
+                        "delete it, or add and commit it first.");
                 System.exit(0);
             }
         }
@@ -533,7 +535,8 @@ public class Repository {
 
                 String headContent = getContentAsStringFromBlobId(headID);
                 String otherContent = getContentAsStringFromBlobId(otherID);
-                String content = getConflictFile(headContent.split("\n"), otherContent.split("\n"));
+                String content = getConflictFile(headContent.split("\n"),
+                        otherContent.split("\n"));
                 rewriteFile(filename, content);
             }
         }
@@ -695,14 +698,15 @@ public class Repository {
     public void validateUntrackedBranch(Map<String, String> blobs) {
         List<String> untrackedFiles = getUntrackedFiles();
         if (untrackedFiles.isEmpty()) {
-            return ;
+            return;
         }
 
         for (String filename : untrackedFiles) {
             String blobID = new Blobs(filename, CWD).getId();
             String otherID = blobs.getOrDefault(filename, "");
             if (!otherID.equals(blobID)) {
-                System.out.println("There is an untracked file in the way; delete it, or add and commit it first.");
+                System.out.println("There is an untracked file in the way; delete it, " +
+                        "or add and commit it first.");
                 System.exit(0);
             }
         }
@@ -748,7 +752,7 @@ public class Repository {
     private void clearStage(Stage stage) {
         File[] files = STAGING_DIR.listFiles();
         if (files == null) {
-            return ;
+            return;
         }
         Path targetDir = BLOBS_DIR.toPath();
         for (File file : files) {
