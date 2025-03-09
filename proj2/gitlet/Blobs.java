@@ -3,7 +3,6 @@ import java.io.Serializable;
 import static gitlet.Utils.*;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 
 public class Blobs implements Serializable {
     private String filename;
