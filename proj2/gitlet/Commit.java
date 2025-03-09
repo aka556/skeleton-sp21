@@ -7,15 +7,12 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 /** Represents a gitlet commit object.
- *  TODO: It's a good idea to give a description here of what else this Class
  *  does at a high level.
  *
  *  @author XiaoYu
  */
 public class Commit implements Serializable {
     /**
-     * TODO: add instance variables here.
-     *
      * List all instance variables of the Commit class here with a useful
      * comment above them describing what that variable represents and how that
      * variable is used. We've provided one example for `message`.
@@ -29,7 +26,8 @@ public class Commit implements Serializable {
      *  -- it's parent commit
      *  Specially, the initial commit with follow attributes
      *  message: initial commit
-     *  have a single branch that initially points this initial commit, master will be current branch
+     *  have a single branch that initially points this initial commit, master will
+     *  be current branch
      *  have date message
      *  have parents commit
      */
@@ -47,7 +45,6 @@ public class Commit implements Serializable {
     private HashMap<String, String> blobs;
 
     private String id;
-    /* TODO: fill in the rest of this class. */
 
     /** initial commit. */
     public Commit() {
@@ -62,15 +59,16 @@ public class Commit implements Serializable {
     public Commit(String message, List<Commit> parents, Stage stage) {
         this.message = message;
         this.timestamp =  new Date();
-        this.parents = new ArrayList<>(2); // normally has one parent, but may have two on merge case
+        // normally has one parent, but may have two on merge case
+        this.parents = new ArrayList<>(2);
         for (Commit p : parents) {
             this.parents.add(p.getID());
         }
 
         this.blobs = parents.get(0).getBlobs(); // get the first parent's blobs(继承父提交的文件快照)
         // handle the staging area
-        for (Map.Entry<String, String> item : stage.getAdded().entrySet()) { // getAdded, return all added files
-            String filename = item.getKey();
+        for (Map.Entry<String, String> item : stage.getAdded().entrySet()) {
+            String filename = item.getKey(); // getAdded, return all added files
             String blobID = item.getValue();
             blobs.put(filename, blobID);
         }
