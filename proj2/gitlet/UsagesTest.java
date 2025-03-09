@@ -258,6 +258,27 @@ public class UsagesTest {
         assertTrue(findFile.exists());
     }
 
+    @Test
+    public void testRemoveStatus() {
+        repo.init();
+        String testFileName1 = "f.txt";
+        String testFileName2 = "g.txt";
+
+        File file1 = join(Repository.CWD, testFileName1);
+        File file2 = join(Repository.CWD, testFileName2);
+
+        writeContents(file1, "Hello, welcome to f!");
+        writeContents(file2, "Hello, welcome to g!");
+
+        repo.add(testFileName1);
+        repo.add(testFileName2);
+        repo.commit("Commit two files!");
+        repo.rm(testFileName1);
+
+        assertFalse(file1.exists());
+        repo.status();
+        repo.rm(testFileName2);
+    }
 
 
     /** Delete directory. */
