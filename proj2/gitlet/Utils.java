@@ -20,7 +20,6 @@ import java.util.List;
 
 
 /** Assorted utilities.
- *
  * Give this file a good read as it provides several useful utility functions
  * to save you some time.
  *
