@@ -2,9 +2,6 @@ package gitlet;
 import org.junit.Test;
 import org.junit.Before;
 import java.io.*;
-import java.util.*;
-import java.nio.file.Paths;
-import java.nio.charset.StandardCharsets;
 import static org.junit.Assert.*;
 import static gitlet.Utils.*;
 
