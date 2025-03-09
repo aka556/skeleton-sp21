@@ -259,6 +259,37 @@ public class UsagesTest {
     }
 
     @Test
+    public void testFindSuccessful() {
+        repo.init();
+        String testFileName1 = "CS61A.txt";
+        File testFile1 = join(Repository.CWD, testFileName1);
+        writeContents(testFile1, "Hello, welcome to CS61A!");
+
+        String testFileName2 = "CS61C.txt";
+        File testFile2 = join(Repository.CWD, testFileName2);
+        writeContents(testFile2, "Hello, welcome to CS61C!");
+
+        repo.add(testFileName1);
+        repo.add(testFileName2);
+        repo.commit("Two files");
+
+        repo.rm(testFileName1);
+        repo.commit("Remove one file");
+
+        String testFileName3 = "CS61A.txt";
+        File testFile3 = join(Repository.CWD, testFileName3);
+        writeContents(testFile3, "Hello, welcome to CS61A, again!");
+        repo.add(testFileName3);
+        repo.commit("Two files");
+
+        // print test message
+        repo.log();
+        repo.find("Two files");
+        repo.find("initial commit");
+        repo.find("Remove one file");
+    }
+
+    @Test
     public void testRemoveStatus() {
         repo.init();
         String testFileName1 = "f.txt";
