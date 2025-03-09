@@ -28,9 +28,7 @@ public class Blobs implements Serializable {
     }
 
     /** Get the filename. */
-    public String getFileName() {
-        return filename;
-    }
+    public String getFileName() {return filename;}
 
     /** Persist the Blob to the .gitlet/blobs directory. */
     public String getId() {
