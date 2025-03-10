@@ -252,8 +252,8 @@ public class Repository {
 
         for (String filename : allCommits) {
             Commit commit = getCommitFromID(filename);
-            if (commit.getMessage().equals(message)) {
-                buffer.append(commit.getID() + "\n");
+            if (commit.getMessage().contains(message)) {
+                buffer.append(commit.getID()).append("\n");
             }
         }
         if (buffer.length() == 0) {
