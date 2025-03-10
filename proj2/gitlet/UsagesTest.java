@@ -154,38 +154,6 @@ public class UsagesTest {
     }
 
     @Test
-    public void testStatusAfterCommit() {
-        repo.init();
-
-        String filename1 = "f.txt";
-        String filename2 = "g.txt";
-        String filename3 = "wug.txt";
-        String filename4 = "notwug.txt";
-
-        File file1 = join(Repository.CWD, filename1);
-        File file2 = join(Repository.CWD, filename2);
-        File file3 = join(Repository.CWD, filename3);
-        File file4 = join(Repository.CWD, filename4);
-
-        // why write contents to the file, they can
-        writeContents(file1, "Hello, f");
-        writeContents(file2, "Hello, g!");
-        writeContents(file3, "Hello, wug!");
-        writeContents(file4, "Hello, not wug!");
-
-        repo.add(filename1);
-        repo.add(filename2);
-        repo.commit("Two files");
-
-        repo.rm(filename1);
-        repo.commit("Removed f.txt");
-
-        repo.log();
-
-        repo.status();
-    }
-
-    @Test
     public void testBranch() {
         repo.init();
 
@@ -328,6 +296,69 @@ public class UsagesTest {
     }
 
     @Test
+    public void testRemoveStatus() {
+        repo.init();
+        String testFileName1 = "f.txt";
+        String testFileName2 = "g.txt";
+
+        File file1 = join(Repository.CWD, testFileName1);
+        File file2 = join(Repository.CWD, testFileName2);
+
+        writeContents(file1, "Hello, welcome to f!");
+        writeContents(file2, "Hello, welcome to g!");
+
+        repo.add(testFileName1);
+        repo.add(testFileName2);
+        repo.commit("Commit two files!");
+        repo.rm(testFileName1);
+
+        assertFalse(file1.exists());
+        repo.status();
+        repo.rm(testFileName2);
+    }
+
+    /** ==============================================
+     *     There are the failed test by grades cope
+     *     So, we add some special test for these
+     *     cases.
+     *  ==============================================
+     */
+
+    /** Test failed 20: status-after-commit. */
+    @Test
+    public void testStatusAfterCommit() {
+        repo.init();
+
+        String filename1 = "f.txt";
+        String filename2 = "g.txt";
+        String filename3 = "wug.txt";
+        String filename4 = "notwug.txt";
+
+        File file1 = join(Repository.CWD, filename1);
+        File file2 = join(Repository.CWD, filename2);
+        File file3 = join(Repository.CWD, filename3);
+        File file4 = join(Repository.CWD, filename4);
+
+        // why write contents to the file, they can
+        writeContents(file1, "Hello, f");
+        writeContents(file2, "Hello, g!");
+        writeContents(file3, "Hello, wug!");
+        writeContents(file4, "Hello, not wug!");
+
+        repo.add(filename1);
+        repo.add(filename2);
+        repo.commit("Two files");
+
+        repo.rm(filename1);
+        repo.commit("Removed f.txt");
+
+        repo.log();
+
+        repo.status();
+    }
+
+    /** Test failed 25: successful-find. */
+    @Test
     public void testFindSuccessful() {
         repo.init();
         String testFileName1 = "CS61A.txt";
@@ -358,28 +389,84 @@ public class UsagesTest {
         repo.find("Remove one file");
     }
 
+    /** Test failed 32: file-overwrite-err. */
     @Test
-    public void testRemoveStatus() {
+    public void testFileOverwriteErr() {
         repo.init();
-        String testFileName1 = "f.txt";
-        String testFileName2 = "g.txt";
 
-        File file1 = join(Repository.CWD, testFileName1);
-        File file2 = join(Repository.CWD, testFileName2);
+        String otherBranchName = "other";
+        repo.branch(otherBranchName);
 
-        writeContents(file1, "Hello, welcome to f!");
-        writeContents(file2, "Hello, welcome to g!");
+        String filename1 = "f.txt";
+        String filename2 = "g.txt";
+        String filename3 = "wug.txt";
+        String filename4 = "notwug.txt";
 
-        repo.add(testFileName1);
-        repo.add(testFileName2);
-        repo.commit("Commit two files!");
-        repo.rm(testFileName1);
+        File file1 = join(Repository.CWD, filename1);
+        File file2 = join(Repository.CWD, filename2);
+        File file3 = join(Repository.CWD, filename3);
+        File file4 = join(Repository.CWD, filename4);
 
-        assertFalse(file1.exists());
-        repo.status();
-        repo.rm(testFileName2);
+        // why write contents to the file, they can
+        writeContents(file1, "Hello, f");
+        writeContents(file2, "Hello, g!");
+        writeContents(file3, "Hello, wug!");
+        writeContents(file4, "Hello, not wug!");
+
+        repo.add(filename1);
+        repo.add(filename2);
+        repo.commit("Main two files");
+
+        assertTrue(file1.exists());
+        assertTrue(file2.exists());
+
+        repo.checkoutFromBranch(otherBranchName);
+        writeContents(file1, "Modified content in other branch");
+
+        repo.checkoutFromBranch("master");
     }
 
+    /** Test failed 33: merge-no-conflicts. */
+    @Test
+    public void testMergeNoConflicts() {
+        repo.init();
+
+        String filename1 = "f.txt";
+        String filename2 = "g.txt";
+        String filename3 = "wug.txt";
+        String filename4 = "notwug.txt";
+
+        File file1 = join(Repository.CWD, filename1);
+        File file2 = join(Repository.CWD, filename2);
+        File file3 = join(Repository.CWD, filename3);
+        File file4 = join(Repository.CWD, filename4);
+
+        // why write contents to the file, they can
+        writeContents(file1, "Hello, f");
+        writeContents(file2, "Hello, g!");
+        writeContents(file3, "Hello, wug!");
+        writeContents(file4, "Hello, not wug!");
+
+        repo.add(filename1);
+        repo.add(filename2);
+        repo.commit("Two files");
+
+        String otherBranchName = "other";
+        repo.branch(otherBranchName);
+
+        String filename5 = "h.txt";
+        String filename6 = "wug2.txt";
+        File file5 = join(Repository.CWD, filename5);
+        File file6 = join(Repository.CWD, filename6);
+        writeContents(file5, "Hello, h");
+        writeContents(file6, "Hello, wug2!");
+
+        repo.add(filename5);
+        repo.rm(filename2);
+        repo.commit("Add h.txt and remove g.txt");
+
+        repo.checkoutFromBranch(otherBranchName);
+    }
 
     /** Delete directory. */
     private void deleteDirectory(File directory) {
