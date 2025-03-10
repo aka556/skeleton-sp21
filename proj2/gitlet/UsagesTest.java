@@ -72,7 +72,8 @@ public class UsagesTest {
         repo.commit("Wanna ro remove this file!");
         repo.rm(removeFileName);
         Stage stage = repo.readStage();
-        assertTrue(stage.getAdded().containsKey(removeFileName));
+        assertTrue(stage.getRemoved().contains(removeFileName));
+        repo.status();
     }
 
     @Test
@@ -114,6 +115,74 @@ public class UsagesTest {
         assertEquals("Hello, Gitlet!", readContentsAsString(testFile));
 
         repo.rm(testFileName);
+    }
+
+    @Test
+    public void testCheckOutBranchName() {
+        repo.init();
+
+        String otherBranchName = "other";
+        repo.branch(otherBranchName);
+
+        String filename1 = "f.txt";
+        String filename2 = "g.txt";
+        String filename3 = "wug.txt";
+        String filename4 = "notwug.txt";
+
+        File file1 = join(Repository.CWD, filename1);
+        File file2 = join(Repository.CWD, filename2);
+        File file3 = join(Repository.CWD, filename3);
+        File file4 = join(Repository.CWD, filename4);
+
+        // why write contents to the file, they can
+        writeContents(file1, "Hello, f");
+        writeContents(file2, "Hello, g!");
+        writeContents(file3, "Hello, wug!");
+        writeContents(file4, "Hello, not wug!");
+
+        repo.add(filename2);
+        repo.add(filename1);
+        repo.commit("Main two files");
+
+        assertTrue(join(Repository.CWD, filename1).exists());
+        assertTrue(join(Repository.CWD, filename2).exists());
+
+        repo.checkoutFromBranch(otherBranchName);
+//        assertTrue(file1.exists());
+//        assertTrue(file2.exists());
+
+    }
+
+    @Test
+    public void testStatusAfterCommit() {
+        repo.init();
+
+        String filename1 = "f.txt";
+        String filename2 = "g.txt";
+        String filename3 = "wug.txt";
+        String filename4 = "notwug.txt";
+
+        File file1 = join(Repository.CWD, filename1);
+        File file2 = join(Repository.CWD, filename2);
+        File file3 = join(Repository.CWD, filename3);
+        File file4 = join(Repository.CWD, filename4);
+
+        // why write contents to the file, they can
+        writeContents(file1, "Hello, f");
+        writeContents(file2, "Hello, g!");
+        writeContents(file3, "Hello, wug!");
+        writeContents(file4, "Hello, not wug!");
+
+        repo.add(filename1);
+        repo.add(filename2);
+        repo.commit("Two files");
+
+        repo.rm(filename1);
+        repo.commit("Removed f.txt");
+
+        repo.log();
+
+        repo.status();
     }
 
     @Test
