@@ -461,19 +461,19 @@ public class Repository {
         Commit other = getCommitFromBranchFile(otherBranchFile);
         Commit local = findLatestAncestor(head, other);
 
-        if (local.getID().equals(head.getID())) {
+        if (local.getID().equals(other.getID())) {
             System.out.println("Given branch is an ancestor of the current branch.");
-            System.exit(0);
+            return;
         }
 
-        if (local.getID().equals(other.getID())) {
+        if (local.getID().equals(head.getID())) {
             System.out.println("Current branch fast-forwarded.");
-            System.exit(0);
+            return;
         }
 
         // merge
         MergeWithLocal(local, head, other);
-        String msg = "Merged: " + branchName + " into " + headBranchName;
+        String msg = "Merged: " + branchName + " into " + headBranchName + ".";
         List<Commit> parents = List.of(head, other);
         commitWith(msg, parents);
     }
@@ -481,9 +481,9 @@ public class Repository {
     public void MergeWithLocal(Commit local, Commit head, Commit other) {
         Set<String> filenames = getAllFileNames(local, head, other);
 
-        List<String> remove = new ArrayList<>();
-        List<String> rewrite = new ArrayList<>();
-        List<String> conflict = new ArrayList<>();
+        List<String> remove = new LinkedList<>();
+        List<String> rewrite = new LinkedList<>();
+        List<String> conflict = new LinkedList<>();
 
         for (String filename : filenames) {
             String localID = local.getBlobs().getOrDefault(filename, "");
@@ -540,6 +540,7 @@ public class Repository {
                 String content = getConflictFile(headContent.split("\n"),
                         otherContent.split("\n"));
                 rewriteFile(filename, content);
+                System.out.println("Encountered a merge conflict.");
             }
         }
     }
@@ -576,7 +577,7 @@ public class Repository {
         }
 
         while (j < len2) {
-            buffer.append(getConflictContent("", head[j]));
+            buffer.append(getConflictContent("", other[j]));
             j += 1;
         }
         return buffer.toString();
@@ -585,8 +586,8 @@ public class Repository {
     public String getConflictContent(String head, String other) {
         StringBuilder buffer = new StringBuilder();
         buffer.append("<<<<<<< HEAD" + "\n");
-        buffer.append(head.isEmpty() ? "" : head + "\n");
-        buffer.append(other.isEmpty() ? "" : other + "\n");
+        buffer.append(head.isEmpty() ? head : head + "\n");
+        buffer.append(other.isEmpty() ? other : other + "\n");
         buffer.append(">>>>>>>" + "\n");
         return buffer.toString();
     }
