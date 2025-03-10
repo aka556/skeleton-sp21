@@ -180,7 +180,7 @@ public class Repository {
          *  remove it. (Otherwise, don't remove it.)
          */
         if (!stageID.isEmpty()) { // have staged for addition
-            stage.getAdded().remove(stageID);
+            stage.getAdded().remove(filename);
         } else { // tracked in the current commit
             stage.getRemoved().add(filename);
         }
@@ -271,9 +271,9 @@ public class Repository {
         List<String> branches = plainFilenamesIn(HEAD_DIR);
         for (String branch : branches) {
             if (branch.equals(headBranch)) {
-                buffer.append("*" + headBranch + "\n");
+                buffer.append("*").append(headBranch).append("\n");
             } else {
-                buffer.append(branch + "\n");
+                buffer.append(branch).append("\n");
             }
         }
         buffer.append("\n");
@@ -281,13 +281,13 @@ public class Repository {
         Stage stage = readStage();
         buffer.append("=== Staged Files ===\n");
         for (String filename : stage.getAdded().keySet()) {
-            buffer.append(filename + "\n");
+            buffer.append(filename).append("\n");
         }
         buffer.append("\n");
 
         buffer.append("=== Removed Files ===\n");
         for (String filename : stage.getRemoved()) {
-            buffer.append(filename + "\n");
+            buffer.append(filename).append("\n");
         }
         buffer.append("\n");
 
@@ -653,7 +653,7 @@ public class Repository {
             File file = join(CWD, filename);
             Blobs blob = readObject(join(BLOBS_DIR, blobID), Blobs.class);
 
-            writeObject(file, blob.getContent());
+            writeContents(file, blob.getContent());
         }
     }
 
