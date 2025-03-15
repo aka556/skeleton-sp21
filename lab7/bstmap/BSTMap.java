@@ -34,7 +34,7 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
     }
 
     /** Returns the key's node if it exists in the tree, null otherwise. */
-    public BSTNode getNode(BSTNode node, K key) {
+    private BSTNode getNode(BSTNode node, K key) {
         if (node == null) {
             return null;
         }
@@ -70,7 +70,7 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
     }
 
     /** Helper method to put a key-value pair into the BST. */
-    public BSTNode put(BSTNode root, K key, V value) {
+    private BSTNode put(BSTNode root, K key, V value) {
         if (root == null) {
             return new BSTNode(key, value, 1);
         }
@@ -128,8 +128,12 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
         }
     }
 
+    public void printInOrder() {
+        printInOrder(root);
+    }
+
     /** Print the BSTMap in order of increasing key. */
-    public void printInOrder(BSTNode root) {
+    private void printInOrder(BSTNode root) {
         if (root == null) {
             return;
         }
