@@ -1,5 +1,6 @@
 package bstmap;
 
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Iterator;
 import java.util.Set;
@@ -88,16 +89,86 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V> {
     }
 
     /** Now, we don't need to implement these methods. */
+    @Override
     public Set<K> keySet() {
-        throw new UnsupportedOperationException();
+        Set<K> set = new HashSet<>();
+        LinkedList<BSTNode> list = new LinkedList<>();
+        list.addLast(root);
+        while (!list.isEmpty()) {
+            BSTNode node = list.removeFirst();
+            if (node == null) {
+                continue;
+            }
+            list.addLast(node.left);
+            list.addLast(node.right);
+            set.add(node.key);
+        }
+        return set;
     }
 
+    /** Removes the mapping for the specified key from this map if present. */
+    @Override
     public V remove(K key) {
-        throw new UnsupportedOperationException();
+        if (containsKey(key)) {
+            V value = get(key);
+            if (value != null) {
+                root = remove(root, key);
+            }
+            return value;
+        }
+        return null;
     }
 
+    private BSTNode remove(BSTNode root, K key) {
+        if (root == null) {
+            return null;
+        }
+        int cmp = key.compareTo(root.key);
+        if (cmp < 0) {
+            root.left = remove(root.left, key);
+        } else if (cmp > 0) {
+            root.right = remove(root.right, key);
+        } else {
+            if (root.left == null) {
+                return root.right;
+            } else if (root.right == null) {
+                return root.left;
+            } else { // has both left and right child
+                BSTNode min = findMin(root.right);
+                root.key = min.key;
+                root.val = min.val;
+                root.right = remove(root.right, min.key);
+            }
+        }
+        root.size = 1 + size(root.left) + size(root.right);
+        return root;
+    }
+
+    /** Find the minimum node in the BSTMap. */
+    private BSTNode findMin(BSTNode root) {
+        while (root.left != null) {
+            root = root.left;
+        }
+        return root;
+    }
+
+    private int size(BSTNode root) {
+        if (root == null) {
+            return 0;
+        }
+        return 1 + size(root.left) + size(root.right);
+    }
+
+    /** Removes the entry for the specified key only if it is currently mapped to
+     * the specified value.
+     */
+    @Override
     public V remove(K key, V value) {
-        throw new UnsupportedOperationException();
+        if (containsKey(key) && get(key).equals(value)) {
+            remove(root, key);
+            return value;
+        }
+        return null;
     }
 
     /** Implements the Iterable interface. */
