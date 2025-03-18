@@ -1,0 +1,70 @@
+Enter # strings to insert into hashmap.ULLMap: enty
+Please enter a positive integer: 10000
+class hashmap.ULLMap: 0.32 sec
+
+Enter # strings to insert into hashmap.MyHashMap: insert
+Please enter a positive integer: 10000
+class hashmap.MyHashMap: 0.01 sec
+
+Enter # strings to insert into Java's HashMap: insert
+Please enter a positive integer: 10000
+Java's Built-in HashMap: 0.00 sec
+
+Would you like to try more timed-tests? (y/n): y
+
+Enter # strings to insert into hashmap.ULLMap: inserting
+Please enter a positive integer: 10000
+class hashmap.ULLMap: 0.40 sec
+
+Enter # strings to insert into hashmap.MyHashMap: inserting
+Please enter a positive integer: 10000
+class hashmap.MyHashMap: 0.00 sec
+
+Enter # strings to insert into Java's HashMap: inserting
+Please enter a positive integer: 10000
+Java's Built-in HashMap: 0.00 sec
+
+
+ This program inserts random Strings of length L
+ Into different types of maps as <String, Integer> pairs.
+
+What would you like L to be?: 100
+
+Enter # strings to insert into hashmap.ULLMap: inserting
+Please enter a positive integer: 10000
+class hashmap.ULLMap: 0.42 sec
+
+Enter # strings to insert into your hashmap.MyHashMap: inserting
+Please enter a positive integer: 10000
+class hashmap.MyHashMap: 0.02 sec
+
+Enter # strings to insert into Java's HashMap: inserting
+Please enter a positive integer: 10000
+Java's Built-in HashMap: 0.02 sec
+
+Would you like to try more timed-tests? (y/n)y
+
+Enter # strings to insert into hashmap.ULLMap: inserting
+Please enter a positive integer: 100000
+--Stack Overflow -- couldn't add 100000 strings of length 100.
+
+
+What would you like L to be?: 10
+
+Enter # strings to insert into each map: insering
+Please enter a positive integer: 10000
+class hashmap.MyHashMapALBuckets: 0.01 sec
+class hashmap.MyHashMapLLBuckets: 0.01 sec
+class hashmap.MyHashMapTSBuckets: 0.02 sec
+class hashmap.MyHashMapHSBuckets: 0.01 sec
+class hashmap.MyHashMapPQBuckets: 0.01 sec
+
+Would you like to try more timed-tests? (y/n)y
+
+Enter # strings to insert into each map: communication
+Please enter a positive integer: 10000
+class hashmap.MyHashMapALBuckets: 0.00 sec
+class hashmap.MyHashMapLLBuckets: 0.00 sec
+class hashmap.MyHashMapTSBuckets: 0.01 sec
+class hashmap.MyHashMapHSBuckets: 0.00 sec
+class hashmap.MyHashMapPQBuckets: 0.00 sec
