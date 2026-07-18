@@ -462,7 +462,9 @@ public class Repository {
     public void merge(String branchName) {
         Stage stage = readStage();
         if (!stage.isEmpty()) {
-            System.out.println("You have uncommitted changes.");
+            System.out.println("You have uncommitted changes"
+                + " that would be overwritten by the merge."
+                + " Commit or stash your changes first.");
             System.exit(0);
         }
 
@@ -591,8 +593,16 @@ public class Repository {
         StringBuilder buffer = new StringBuilder();
         buffer.append("<<<<<<< HEAD\n");
         buffer.append(headContent);
+        if (!headContent.isEmpty()
+                && !headContent.endsWith("\n")) {
+            buffer.append("\n");
+        }
         buffer.append("=======\n");
         buffer.append(otherContent);
+        if (!otherContent.isEmpty()
+                && !otherContent.endsWith("\n")) {
+            buffer.append("\n");
+        }
         buffer.append(">>>>>>>\n");
         return buffer.toString();
     }
@@ -892,6 +902,217 @@ public class Repository {
         if (!GITLET_DIR.isDirectory()) {
             System.out.println("Not in an initialized Gitlet directory.");
             System.exit(0);
+        }
+    }
+
+    /** Read the config file. */
+    @SuppressWarnings("unchecked")
+    private HashMap<String, String> readConfig() {
+        if (!CONFIG.exists() || CONFIG.length() == 0) {
+            return new HashMap<>();
+        }
+        try {
+            return readObject(CONFIG, HashMap.class);
+        } catch (Exception e) {
+            return new HashMap<>();
+        }
+    }
+
+    /** Write the config file. */
+    private void writeConfig(HashMap<String, String> config) {
+        writeObject(CONFIG, config);
+    }
+
+    /** Add a remote. */
+    public void addRemote(String name, String path) {
+        HashMap<String, String> config = readConfig();
+        if (config.containsKey(name)) {
+            System.out.println(
+                "A remote with that name already exists.");
+            System.exit(0);
+        }
+        config.put(name, path);
+        writeConfig(config);
+    }
+
+    /** Remove a remote. */
+    public void rmRemote(String name) {
+        HashMap<String, String> config = readConfig();
+        if (!config.containsKey(name)) {
+            System.out.println(
+                "A remote with that name does not exist.");
+            System.exit(0);
+        }
+        config.remove(name);
+        writeConfig(config);
+    }
+
+    /** Get the remote .gitlet directory. */
+    private File getRemoteGitletDir(String remoteName) {
+        HashMap<String, String> config = readConfig();
+        String path = config.get(remoteName);
+        if (path == null) {
+            System.out.println("Remote directory not found.");
+            System.exit(0);
+        }
+        File remoteDir = new File(path);
+        if (!remoteDir.exists() || !remoteDir.isDirectory()) {
+            System.out.println("Remote directory not found.");
+            System.exit(0);
+        }
+        return remoteDir;
+    }
+
+    /** Fetch from remote. */
+    public void fetch(String remoteName, String branchName) {
+        File remoteGitletDir = getRemoteGitletDir(remoteName);
+        File remoteBranchFile = join(
+            remoteGitletDir, "refs", "heads", branchName);
+        if (!remoteBranchFile.exists()) {
+            System.out.println(
+                "That remote does not have that branch.");
+            System.exit(0);
+        }
+        String remoteCommitID =
+            readContentsAsString(remoteBranchFile);
+        File remoteCommitsDir = join(remoteGitletDir, "commits");
+        File remoteBlobsDir = join(remoteGitletDir, "blobs");
+        Set<String> commitsToCopy =
+            bfsCommits(remoteCommitsDir, remoteCommitID);
+        for (String commitID : commitsToCopy) {
+            File remoteCommit = join(remoteCommitsDir, commitID);
+            File localCommit = join(COMMITS_DIR, commitID);
+            if (!localCommit.exists()) {
+                copyFile(remoteCommit, localCommit);
+            }
+        }
+        Set<String> blobsCopied = new HashSet<>();
+        for (String commitID : commitsToCopy) {
+            Commit commit = getCommitFromID(commitID);
+            if (commit != null) {
+                for (String blobID : commit.getBlobs().values()) {
+                    if (!blobsCopied.contains(blobID)) {
+                        blobsCopied.add(blobID);
+                        File remoteBlob =
+                            join(remoteBlobsDir, blobID);
+                        File localBlob = join(BLOBS_DIR, blobID);
+                        if (!localBlob.exists()
+                                && remoteBlob.exists()) {
+                            copyFile(remoteBlob, localBlob);
+                        }
+                    }
+                }
+            }
+        }
+        File remoteTrackingDir = join(REMOTE_DIR, remoteName);
+        remoteTrackingDir.mkdirs();
+        writeContents(
+            join(remoteTrackingDir, branchName), remoteCommitID);
+    }
+
+    /** Push to remote. */
+    public void push(String remoteName, String branchName) {
+        File remoteGitletDir = getRemoteGitletDir(remoteName);
+        File remoteBranchFile = join(
+            remoteGitletDir, "refs", "heads", branchName);
+        String remoteCommitID = null;
+        if (remoteBranchFile.exists()) {
+            remoteCommitID =
+                readContentsAsString(remoteBranchFile);
+        }
+        File localBranchFile = getBranchFile(branchName);
+        if (!localBranchFile.exists()) {
+            System.out.println(
+                "That remote does not have that branch.");
+            System.exit(0);
+        }
+        String localCommitID = readContentsAsString(localBranchFile);
+        if (remoteCommitID != null) {
+            Set<String> localAncestors =
+                bfsFromCommit(getHead());
+            if (!localAncestors.contains(remoteCommitID)) {
+                System.out.println(
+                    "Please pull down remote changes"
+                    + " before pushing.");
+                System.exit(0);
+            }
+        }
+        File remoteCommitsDir = join(remoteGitletDir, "commits");
+        File remoteBlobsDir = join(remoteGitletDir, "blobs");
+        remoteCommitsDir.mkdirs();
+        remoteBlobsDir.mkdirs();
+        Set<String> commitsToCopy = bfsFromCommit(getHead());
+        if (remoteCommitID != null) {
+            Set<String> remoteAncestors =
+                bfsCommits(remoteCommitsDir, remoteCommitID);
+            commitsToCopy.removeAll(remoteAncestors);
+        }
+        for (String commitID : commitsToCopy) {
+            File localCommit = join(COMMITS_DIR, commitID);
+            File remoteCommit = join(remoteCommitsDir, commitID);
+            if (!remoteCommit.exists()) {
+                copyFile(localCommit, remoteCommit);
+            }
+        }
+        Set<String> blobsCopied = new HashSet<>();
+        for (String commitID : commitsToCopy) {
+            Commit commit = getCommitFromID(commitID);
+            if (commit != null) {
+                for (String blobID : commit.getBlobs().values()) {
+                    if (!blobsCopied.contains(blobID)) {
+                        blobsCopied.add(blobID);
+                        File localBlob = join(BLOBS_DIR, blobID);
+                        File remoteBlob =
+                            join(remoteBlobsDir, blobID);
+                        if (!remoteBlob.exists()
+                                && localBlob.exists()) {
+                            copyFile(localBlob, remoteBlob);
+                        }
+                    }
+                }
+            }
+        }
+        writeContents(remoteBranchFile, localCommitID);
+    }
+
+    /** Pull from remote. */
+    public void pull(String remoteName, String branchName) {
+        fetch(remoteName, branchName);
+        merge(remoteName + "/" + branchName);
+    }
+
+    /** BFS through commits in a directory. */
+    private Set<String> bfsCommits(
+            File commitsDir, String startCommitID) {
+        Set<String> result = new HashSet<>();
+        Queue<String> queue = new LinkedList<>();
+        queue.add(startCommitID);
+        while (!queue.isEmpty()) {
+            String commitID = queue.poll();
+            if (result.contains(commitID)) {
+                continue;
+            }
+            result.add(commitID);
+            File commitFile = join(commitsDir, commitID);
+            if (commitFile.exists()) {
+                Commit commit =
+                    readObject(commitFile, Commit.class);
+                for (String parentID : commit.getParents()) {
+                    if (!result.contains(parentID)) {
+                        queue.add(parentID);
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
+    /** Copy a file. */
+    private void copyFile(File source, File dest) {
+        try {
+            Files.copy(source.toPath(), dest.toPath());
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }

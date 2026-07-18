@@ -95,6 +95,31 @@ public class Main {
                 repo.checkIsInitialDirectoryExits();
                 repo.merge(args[1]);
                 break;
+            case "add-remote":
+                repo.checkCommandLength(args.length, 3);
+                repo.checkIsInitialDirectoryExits();
+                repo.addRemote(args[1], args[2]);
+                break;
+            case "rm-remote":
+                repo.checkCommandLength(args.length, 3);
+                repo.checkIsInitialDirectoryExits();
+                repo.rmRemote(args[1]);
+                break;
+            case "fetch":
+                repo.checkCommandLength(args.length, 3);
+                repo.checkIsInitialDirectoryExits();
+                repo.fetch(args[1], args[2]);
+                break;
+            case "push":
+                repo.checkCommandLength(args.length, 3);
+                repo.checkIsInitialDirectoryExits();
+                repo.push(args[1], args[2]);
+                break;
+            case "pull":
+                repo.checkCommandLength(args.length, 3);
+                repo.checkIsInitialDirectoryExits();
+                repo.pull(args[1], args[2]);
+                break;
             default:
                 System.out.println("No command with that name exists.");
                 System.exit(0);
