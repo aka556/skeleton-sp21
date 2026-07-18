@@ -68,8 +68,8 @@ public class Repository {
     /** Init the persistence. */
     public void init() {
         if (isGitletInitialized()) {
-            System.out.println("A Gitlet version-control system " +
-                               "already exists in the current directory.");
+            System.out.println("A Gitlet version-control system "
+                    + "already exists in the current directory.");
             System.exit(0);
         }
 
@@ -543,7 +543,7 @@ public class Repository {
 
         if (!remove.isEmpty()) {
             for (String filename : remove) {
-               rm(filename);
+                rm(filename);
             }
         }
 
@@ -913,7 +913,7 @@ public class Repository {
         }
         try {
             return readObject(CONFIG, HashMap.class);
-        } catch (Exception e) {
+        } catch (GitletException e) {
             return new HashMap<>();
         }
     }

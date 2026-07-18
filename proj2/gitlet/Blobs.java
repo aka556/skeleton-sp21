@@ -9,9 +9,9 @@ public class Blobs implements Serializable {
     private byte[] content; // The binary forms of blob
     private String id; // The unique id
 
-    public Blobs(String filename, File CWD) {
+    public Blobs(String filename, File dir) {
         this.filename = filename;
-        File file = join(CWD, filename);
+        File file = join(dir, filename);
 
         if (file.exists()) {
             this.content = readContents(file);
@@ -28,7 +28,9 @@ public class Blobs implements Serializable {
     }
 
     /** Get the filename. */
-    public String getFileName() {return filename;}
+    public String getFileName() {
+        return filename;
+    }
 
     /** Persist the Blob to the .gitlet/blobs directory. */
     public String getId() {
