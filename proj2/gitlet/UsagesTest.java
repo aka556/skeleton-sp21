@@ -221,7 +221,7 @@ public class UsagesTest {
         String otherBranchName = "origin";
         repo.branch(otherBranchName);
 
-        repo.rm_branch(otherBranchName);
+        repo.rmBranch(otherBranchName);
         File file = join(Repository.GITLET_DIR, "refs", "heads", otherBranchName);
         assertFalse(file.exists());
 
@@ -277,7 +277,7 @@ public class UsagesTest {
 
         repo.rm(testFileName3);
 
-        repo.global_log();
+        repo.globalLog();
     }
 
     @Test

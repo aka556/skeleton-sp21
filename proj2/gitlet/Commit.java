@@ -65,7 +65,7 @@ public class Commit implements Serializable {
             this.parents.add(p.getID());
         }
 
-        this.blobs = parents.get(0).getBlobs(); // get the first parent's blobs(继承父提交的文件快照)
+        this.blobs = parents.get(0).getBlobs();
         // handle the staging area
         for (Map.Entry<String, String> item : stage.getAdded().entrySet()) {
             String filename = item.getKey(); // getAdded, return all added files
@@ -114,7 +114,11 @@ public class Commit implements Serializable {
         sb.append("===\n");
         sb.append("commit ").append(this.id).append("\n");
         if (parents.size() == 2) {
-            sb.append("Merge: ").append(parents.get(0).substring(0, 7)).append(" ").append(parents.get(1).substring(0, 7)).append("\n");
+            sb.append("Merge: ");
+            sb.append(parents.get(0).substring(0, 7));
+            sb.append(" ");
+            sb.append(parents.get(1).substring(0, 7));
+            sb.append("\n");
         }
         sb.append("Date: ").append(this.getDateString()).append("\n");
         sb.append(this.message).append("\n\n");

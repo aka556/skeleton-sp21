@@ -1,11 +1,12 @@
 package gitlet;
+
 import java.io.*;
-import static gitlet.Utils.*;
-import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
-import java.util.Set;
+
+import static gitlet.Utils.*;
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 /** Represents a gitlet repository.
  *  does at a high level.
@@ -23,7 +24,7 @@ public class Repository {
      *  .gitlet
      *  -- staging // 暂存区
      *  -- [stage] // 暂存区对象
-     *  -- blobs   // 已提交的文件内容存储，其结构是一个hashmap,里面包含文件名和提交版本
+     *  -- blobs   // file content storage
      *  -- commits // 提交对象存储，以hash值命名
      *  -- refs    // 存储分支和远程仓库的引用
      *    -- heads -> [master] [branch name]
@@ -37,34 +38,32 @@ public class Repository {
     public static final File CWD = new File(System.getProperty("user.dir"));
     /** The .gitlet directory. */
     public static final File GITLET_DIR = join(CWD, ".gitlet");
+    /** The blobs directory. */
+    private static final File BLOBS_DIR = join(GITLET_DIR, "blobs");
+    /** The commits directory. */
+    private static final File COMMITS_DIR = join(GITLET_DIR, "commits");
+    /** The refs directory. */
+    private static final File REFS_DIR = join(GITLET_DIR, "refs");
+    /** The heads directory. */
+    private static final File HEAD_DIR = join(REFS_DIR, "heads");
+    /** The remotes directory. */
+    private static final File REMOTE_DIR = join(REFS_DIR, "remotes");
+    /** The HEAD file. */
+    private static final File HEAD = join(GITLET_DIR, "HEAD");
+    /** The staging directory. */
+    private static final File STAGING_DIR = join(GITLET_DIR, "staging");
+    /** The stage file. */
+    private static final File STAGE = join(GITLET_DIR, "stage");
+    /** The config file. */
+    private static final File CONFIG = join(GITLET_DIR, "config");
 
-    /* TODO: fill in the rest of this class. */
-    private File BLOBS_DIR;
-    private File COMMITS_DIR;
-    private File REFS_DIR;
-    private File HEAD_DIR;
-    private File REMOTE_DIR;
-    private File HEAD;
-    private File STAGING_DIR;
-    private File STAGE;
-    private File CONFIG;
-
-    public Repository() {
-        configDIRS();
-    }
-
-    /** Config the directories. */
-    private void configDIRS() {
-        this.BLOBS_DIR = join(GITLET_DIR, "blobs");
-        this.COMMITS_DIR = join(GITLET_DIR, "commits");
-        this.REFS_DIR = join(GITLET_DIR, "refs");
-        this.HEAD_DIR = join(REFS_DIR, "heads");
-        this.REMOTE_DIR = join(REFS_DIR, "remotes");
-        this.STAGING_DIR = join(GITLET_DIR, "staging");
-        this.STAGE = join(GITLET_DIR, "stage");
-        this.HEAD = join(GITLET_DIR, "HEAD");
-        this.CONFIG = join(GITLET_DIR, "config");
-    }
+    /** Gitlet directory filter. */
+    private static final FilenameFilter GITLET_FILTER = new FilenameFilter() {
+        @Override
+        public boolean accept(File dir, String name) {
+            return !name.endsWith(".gitlet");
+        }
+    };
 
     /** Init the persistence. */
     public void init() {
@@ -133,7 +132,7 @@ public class Repository {
         if (blobID.equals(headID)) {
             if (!blobID.equals(stageID)) {
                 join(STAGING_DIR, stageID).delete();
-                stage.getAdded().remove(stageID);
+                stage.getAdded().remove(filename);
                 stage.getRemoved().remove(filename);
                 writeStage(stage);
             }
@@ -165,8 +164,8 @@ public class Repository {
         Commit head = getHead();
         Stage stage = readStage();
 
-        String headID = head.getBlobs().getOrDefault(filename, ""); // 当前提交中的文件版本
-        String stageID = stage.getAdded().getOrDefault(filename, ""); // 暂存区中的文件版本
+        String headID = head.getBlobs().getOrDefault(filename, "");
+        String stageID = stage.getAdded().getOrDefault(filename, "");
 
         // If the file is not staging and tracking, print following message.
         if (headID.isEmpty() && stageID.isEmpty()) {
@@ -234,7 +233,7 @@ public class Repository {
     }
 
     /** Get the global-log messages. */
-    public void global_log() {
+    public void globalLog() {
         List<String> allCommits = plainFilenamesIn(COMMITS_DIR);
         StringBuffer buffer = new StringBuffer();
 
@@ -252,7 +251,7 @@ public class Repository {
 
         for (String filename : allCommits) {
             Commit commit = getCommitFromID(filename);
-            if (commit.getMessage().contains(message)) {
+            if (commit.getMessage().equals(message)) {
                 buffer.append(commit.getID()).append("\n");
             }
         }
@@ -265,7 +264,7 @@ public class Repository {
 
     /** Look the status of gitlet. */
     public void status() {
-        StringBuffer buffer = new StringBuffer();
+        StringBuilder buffer = new StringBuilder();
         buffer.append("=== Branches ===\n");
         String headBranch = readContentsAsString(HEAD);
         List<String> branches = plainFilenamesIn(HEAD_DIR);
@@ -280,23 +279,34 @@ public class Repository {
 
         Stage stage = readStage();
         buffer.append("=== Staged Files ===\n");
-        for (String filename : stage.getAdded().keySet()) {
+        List<String> stagedFiles = new ArrayList<>(stage.getAdded().keySet());
+        Collections.sort(stagedFiles);
+        for (String filename : stagedFiles) {
             buffer.append(filename).append("\n");
         }
         buffer.append("\n");
 
         buffer.append("=== Removed Files ===\n");
-        for (String filename : stage.getRemoved()) {
+        List<String> removedFiles = new ArrayList<>(stage.getRemoved());
+        Collections.sort(removedFiles);
+        for (String filename : removedFiles) {
             buffer.append(filename).append("\n");
         }
         buffer.append("\n");
 
         buffer.append("=== Modifications Not Staged For Commit ===\n");
+        List<String> modNotStaged = getModificationNotStagedFiles();
+        for (String entry : modNotStaged) {
+            buffer.append(entry).append("\n");
+        }
         buffer.append("\n");
 
         buffer.append("=== Untracked Files ===\n");
+        List<String> untracked = getUntrackedFiles();
+        for (String filename : untracked) {
+            buffer.append(filename).append("\n");
+        }
         buffer.append("\n");
-
 
         System.out.println(buffer);
     }
@@ -312,6 +322,10 @@ public class Repository {
     /** checkout [commit id] [file name] */
     public void checkoutFileFromHeadAndId(String commitID, String filename) {
         commitID = getCompleteCommitID(commitID);
+        if (commitID == null) {
+            System.out.println("No commit with that id exists.");
+            System.exit(0);
+        }
         File commitFile = join(COMMITS_DIR, commitID);
         if (!commitFile.exists()) {
             System.out.println("No commit with that id exists.");
@@ -342,6 +356,7 @@ public class Repository {
         clearStage(readStage());
 
         replaceCurrentWorkingContents(otherCommit);
+        writeContents(HEAD, branchName);
     }
 
     public void checkoutFileFromCommit(Commit commit, String filename) {
@@ -380,7 +395,7 @@ public class Repository {
     }
 
     /** Implements the rm-branch functions of gitlet. */
-    public void rm_branch(String branchName) {
+    public void rmBranch(String branchName) {
         File branch = join(HEAD_DIR, branchName);
         if (!branch.exists()) {
             System.out.println("A branch with that name does not exist.");
@@ -398,6 +413,11 @@ public class Repository {
 
     /** Reset the commit by commit id. */
     public void reset(String commitID) {
+        commitID = getCompleteCommitID(commitID);
+        if (commitID == null) {
+            System.out.println("No commit with that id exists.");
+            System.exit(0);
+        }
         File file = join(COMMITS_DIR, commitID);
         if (!file.exists()) {
             System.out.println("No commit with that id exists.");
@@ -414,7 +434,7 @@ public class Repository {
         clearStage(readStage());
 
         String headBranchName = getHeadBranchName();
-        writeContents(join(HEAD_DIR, headBranchName), commitID); // 更新当前分支的指向
+        writeContents(join(HEAD_DIR, headBranchName), commitID);
     }
 
     /** methods implementation
@@ -442,7 +462,8 @@ public class Repository {
     public void merge(String branchName) {
         Stage stage = readStage();
         if (!stage.isEmpty()) {
-            System.out.println("You have uncommited changes.");
+            System.out.println("You have uncommitted changes.");
+            System.exit(0);
         }
 
         File otherBranchFile = getBranchFile(branchName);
@@ -467,18 +488,21 @@ public class Repository {
         }
 
         if (local.getID().equals(head.getID())) {
+            replaceCurrentWorkingContents(other);
+            clearStage(readStage());
+            writeContents(join(HEAD_DIR, headBranchName), other.getID());
             System.out.println("Current branch fast-forwarded.");
             return;
         }
 
         // merge
-        MergeWithLocal(local, head, other);
-        String msg = "Merged: " + branchName + " into " + headBranchName + ".";
+        mergeWithLocal(local, head, other);
+        String msg = "Merged " + branchName + " into " + headBranchName + ".";
         List<Commit> parents = List.of(head, other);
         commitWith(msg, parents);
     }
 
-    public void MergeWithLocal(Commit local, Commit head, Commit other) {
+    public void mergeWithLocal(Commit local, Commit head, Commit other) {
         Set<String> filenames = getAllFileNames(local, head, other);
 
         List<String> remove = new LinkedList<>();
@@ -537,9 +561,11 @@ public class Repository {
 
                 String headContent = getContentAsStringFromBlobId(headID);
                 String otherContent = getContentAsStringFromBlobId(otherID);
-                String content = getConflictFile(headContent.split("\n"),
-                        otherContent.split("\n"));
+                String content = getConflictFile(
+                        headContent == null ? "" : headContent,
+                        otherContent == null ? "" : otherContent);
                 rewriteFile(filename, content);
+                add(filename);
                 System.out.println("Encountered a merge conflict.");
             }
         }
@@ -557,38 +583,17 @@ public class Repository {
         return getBlobFromID(blobID).getContentAsString();
     }
 
-    public String getConflictFile(String[] head, String[] other) {
-        StringBuilder buffer = new StringBuilder();
-        int len1 = head.length, len2 = other.length;
-        int i = 0, j = 0;
-        while (i < len1 && j < len2) {
-            if (head[i].equals(other[j])) {
-                buffer.append(head[i]);
-            } else {
-                buffer.append(getConflictContent(head[i], other[j]));
-            }
-            i += 1;
-            j += 1;
-        }
-
-        while (i < len1) {
-            buffer.append(getConflictContent(head[i], ""));
-            i += 1;
-        }
-
-        while (j < len2) {
-            buffer.append(getConflictContent("", other[j]));
-            j += 1;
-        }
-        return buffer.toString();
+    public String getConflictFile(String headContent, String otherContent) {
+        return getConflictContent(headContent, otherContent);
     }
 
-    public String getConflictContent(String head, String other) {
+    public String getConflictContent(String headContent, String otherContent) {
         StringBuilder buffer = new StringBuilder();
-        buffer.append("<<<<<<< HEAD" + "\n");
-        buffer.append(head.isEmpty() ? head : head + "\n");
-        buffer.append(other.isEmpty() ? other : other + "\n");
-        buffer.append(">>>>>>>" + "\n");
+        buffer.append("<<<<<<< HEAD\n");
+        buffer.append(headContent);
+        buffer.append("=======\n");
+        buffer.append(otherContent);
+        buffer.append(">>>>>>>\n");
         return buffer.toString();
     }
 
@@ -659,7 +664,7 @@ public class Repository {
     }
 
     public void clearWorkingSpace() {
-        File[] files = CWD.listFiles(getletFilter);
+        File[] files = CWD.listFiles(GITLET_FILTER);
         for (File file : files) {
             deleteFiles(file);
         }
@@ -674,12 +679,6 @@ public class Repository {
         file.delete();
     }
 
-    public FilenameFilter getletFilter = new FilenameFilter() {
-        @Override
-        public boolean accept(File dir, String name) {
-            return !name.endsWith(".gitlet");
-        }
-    };
 
     public void validateUntrackedBranch(Map<String, String> blobs) {
         List<String> untrackedFiles = getUntrackedFiles();
@@ -721,17 +720,64 @@ public class Repository {
         if (commitID.length() == UID_LENGTH) {
             return commitID;
         }
+        String match = null;
         for (String commit : Objects.requireNonNull(COMMITS_DIR.list())) {
-            if (commitID.equals(commit)) {
-                return commitID;
+            if (commit.startsWith(commitID)) {
+                if (match != null) {
+                    System.out.println("Short commit id is ambiguous.");
+                    System.exit(0);
+                }
+                match = commit;
             }
         }
-        return null;
+        return match;
     }
 
     /** Get files that modifications not staged for commit. */
     private List<String> getModificationNotStagedFiles() {
-        return null;
+        List<String> result = new ArrayList<>();
+        Stage stage = readStage();
+        Commit head = getHead();
+
+        // Check files staged for addition
+        for (Map.Entry<String, String> entry : stage.getAdded().entrySet()) {
+            String filename = entry.getKey();
+            String stagedBlobID = entry.getValue();
+            File file = join(CWD, filename);
+
+            if (!file.exists()) {
+                result.add(filename + " (deleted)");
+            } else {
+                String currentBlobID = new Blobs(filename, CWD).getId();
+                if (!currentBlobID.equals(stagedBlobID)) {
+                    result.add(filename + " (modified)");
+                }
+            }
+        }
+
+        // Check files tracked by head but not staged
+        for (Map.Entry<String, String> entry : head.getBlobs().entrySet()) {
+            String filename = entry.getKey();
+            String headBlobID = entry.getValue();
+
+            if (stage.getAdded().containsKey(filename)
+                    || stage.getRemoved().contains(filename)) {
+                continue;
+            }
+
+            File file = join(CWD, filename);
+            if (!file.exists()) {
+                result.add(filename + " (deleted)");
+            } else {
+                String currentBlobID = new Blobs(filename, CWD).getId();
+                if (!currentBlobID.equals(headBlobID)) {
+                    result.add(filename + " (modified)");
+                }
+            }
+        }
+
+        Collections.sort(result);
+        return result;
     }
 
     /** Clear the staging area. */

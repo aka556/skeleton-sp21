@@ -30,7 +30,7 @@ public class Main {
                 break;
             case "commit":
                 repo.checkCommandLength(args.length, 2);
-                repo.checkIsStagingEmpty();
+                repo.checkIsInitialDirectoryExits();
                 repo.commit(args[1]);
                 break;
             case "rm":
@@ -46,7 +46,7 @@ public class Main {
             case "global-log":
                 repo.checkCommandLength(args.length, 1);
                 repo.checkIsInitialDirectoryExits();
-                repo.global_log();
+                repo.globalLog();
                 break;
             case "find":
                 repo.checkCommandLength(args.length, 2);
@@ -83,7 +83,7 @@ public class Main {
             case "rm-branch":
                 repo.checkCommandLength(args.length, 2);
                 repo.checkIsInitialDirectoryExits();
-                repo.rm_branch(args[1]);
+                repo.rmBranch(args[1]);
                 break;
             case "reset":
                 repo.checkCommandLength(args.length, 2);
