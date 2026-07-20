@@ -3,6 +3,7 @@ package byow.Core;
 import byow.TileEngine.TERenderer;
 import byow.TileEngine.TETile;
 import byow.TileEngine.Tileset;
+import byow.Networking.BYOWServer;
 import edu.princeton.cs.introcs.StdDraw;
 
 import java.awt.Color;
@@ -21,7 +22,6 @@ public class Engine {
     private long seed;
     private boolean gameRunning;
     private StringBuilder moveHistory;
-    private GameState savedState;
 
     /**
      * Method used for exploring a fresh world. This method should handle all inputs,
@@ -108,7 +108,7 @@ public class Engine {
         if (seedInput.length() > 0) {
             seed = Long.parseLong(seedInput.toString());
             createWorld(seed);
-            startGameLoop();
+            startGameLoop(null);
         }
     }
 
@@ -122,7 +122,7 @@ public class Engine {
             world = loaded.world;
             moveHistory = new StringBuilder(loaded.moveHistory);
             avatar = new Avatar(loaded.avatarX, loaded.avatarY, world);
-            startGameLoop();
+            startGameLoop(null);
         }
     }
 
@@ -144,36 +144,84 @@ public class Engine {
 
     /**
      * Starts the main game loop.
+     * @param server The BYOWServer for remote play, or null for local play
      */
-    private void startGameLoop() {
+    private void startGameLoop(BYOWServer server) {
         ter.initialize(WIDTH, HEIGHT + HUD_HEIGHT);
+
+        // Send canvas config if remote
+        if (server != null) {
+            server.sendCanvasConfig(WIDTH * 16, (HEIGHT + HUD_HEIGHT) * 16);
+            server.sendCanvas();
+        }
 
         while (gameRunning) {
             // Render world
             renderWorld();
 
-            // Handle input
-            if (StdDraw.hasNextKeyTyped()) {
-                char key = StdDraw.nextKeyTyped();
+            // Send canvas to client if remote
+            if (server != null) {
+                server.sendCanvas();
+            }
 
-                // Check for quit command
-                if (key == ':') {
-                    if (StdDraw.hasNextKeyTyped()) {
-                        char nextKey = Character.toLowerCase(StdDraw.nextKeyTyped());
-                        if (nextKey == 'q') {
-                            saveGame();
-                            gameRunning = false;
-                            return;
-                        }
+            // Handle input - from keyboard or remote client
+            boolean hasInput;
+            char key;
+
+            if (server != null) {
+                hasInput = server.clientHasKeyTyped();
+                if (hasInput) {
+                    key = server.clientNextKeyTyped();
+                } else {
+                    StdDraw.pause(50);
+                    continue;
+                }
+            } else {
+                hasInput = StdDraw.hasNextKeyTyped();
+                if (hasInput) {
+                    key = StdDraw.nextKeyTyped();
+                } else {
+                    StdDraw.pause(50);
+                    continue;
+                }
+            }
+
+            // Check for quit command
+            if (key == ':') {
+                boolean hasNext;
+                char nextKey;
+
+                if (server != null) {
+                    hasNext = server.clientHasKeyTyped();
+                    if (hasNext) {
+                        nextKey = server.clientNextKeyTyped();
+                    } else {
+                        continue;
+                    }
+                } else {
+                    hasNext = StdDraw.hasNextKeyTyped();
+                    if (hasNext) {
+                        nextKey = StdDraw.nextKeyTyped();
+                    } else {
+                        continue;
                     }
                 }
 
-                // Handle movement
-                if (Character.toLowerCase(key) == 'w' || Character.toLowerCase(key) == 'a' ||
-                    Character.toLowerCase(key) == 's' || Character.toLowerCase(key) == 'd') {
-                    if (avatar.move(key)) {
-                        moveHistory.append(key);
+                if (Character.toLowerCase(nextKey) == 'q') {
+                    saveGame();
+                    if (server != null) {
+                        server.stopConnection();
                     }
+                    gameRunning = false;
+                    return;
+                }
+            }
+
+            // Handle movement
+            if (Character.toLowerCase(key) == 'w' || Character.toLowerCase(key) == 'a' ||
+                Character.toLowerCase(key) == 's' || Character.toLowerCase(key) == 'd') {
+                if (avatar.move(key)) {
+                    moveHistory.append(key);
                 }
             }
 
@@ -340,6 +388,120 @@ public class Engine {
             }
 
             i++;
+        }
+    }
+
+    /**
+     * Method used for remote gameplay. This method creates a BYOWServer that listens for
+     * a client connection, then allows the remote client to play the game.
+     * @param portStr the port number as a string
+     */
+    public void interactWithRemoteClient(String portStr) {
+        try {
+            int port = Integer.parseInt(portStr);
+            BYOWServer server = new BYOWServer(port);
+
+            // Show main menu to remote client
+            gameRunning = true;
+            showRemoteMainMenu(server);
+
+        } catch (IOException e) {
+            System.out.println("Error starting server: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Shows the main menu to the remote client.
+     */
+    private void showRemoteMainMenu(BYOWServer server) {
+        while (gameRunning) {
+            // Draw menu
+            StdDraw.clear(Color.BLACK);
+            Font titleFont = new Font("Monaco", Font.BOLD, 40);
+            Font menuFont = new Font("Monaco", Font.PLAIN, 20);
+            StdDraw.setFont(titleFont);
+            StdDraw.setPenColor(Color.WHITE);
+            StdDraw.text(WIDTH / 2.0, HEIGHT / 2.0 + 5, "CS61BYoW");
+            StdDraw.setFont(menuFont);
+            StdDraw.text(WIDTH / 2.0, HEIGHT / 2.0, "New World (N)");
+            StdDraw.text(WIDTH / 2.0, HEIGHT / 2.0 - 2, "Load World (L)");
+            StdDraw.text(WIDTH / 2.0, HEIGHT / 2.0 - 4, "Quit (Q)");
+            StdDraw.show();
+
+            // Send canvas to client
+            server.sendCanvas();
+
+            // Handle input from remote client
+            if (server.clientHasKeyTyped()) {
+                char key = Character.toLowerCase(server.clientNextKeyTyped());
+                switch (key) {
+                    case 'n':
+                        handleRemoteNewWorld(server);
+                        break;
+                    case 'l':
+                        handleRemoteLoadWorld(server);
+                        break;
+                    case 'q':
+                        server.stopConnection();
+                        gameRunning = false;
+                        break;
+                }
+            }
+
+            StdDraw.pause(50);
+        }
+    }
+
+    /**
+     * Handles new world creation for remote client.
+     */
+    private void handleRemoteNewWorld(BYOWServer server) {
+        StringBuilder seedInput = new StringBuilder();
+        boolean enteringSeed = true;
+
+        while (enteringSeed) {
+            StdDraw.clear(Color.BLACK);
+            Font font = new Font("Monaco", Font.PLAIN, 20);
+            StdDraw.setFont(font);
+            StdDraw.setPenColor(Color.WHITE);
+            StdDraw.text(WIDTH / 2.0, HEIGHT / 2.0 + 2, "Enter Seed:");
+            StdDraw.text(WIDTH / 2.0, HEIGHT / 2.0, seedInput.toString() + "_");
+            StdDraw.show();
+
+            // Send canvas to client
+            server.sendCanvas();
+
+            if (server.clientHasKeyTyped()) {
+                char key = server.clientNextKeyTyped();
+                if (key == 'S' || key == 's') {
+                    enteringSeed = false;
+                } else if (Character.isDigit(key)) {
+                    seedInput.append(key);
+                }
+            }
+
+            StdDraw.pause(50);
+        }
+
+        if (seedInput.length() > 0) {
+            seed = Long.parseLong(seedInput.toString());
+            createWorld(seed);
+            startGameLoop(server);
+        }
+    }
+
+    /**
+     * Handles loading a saved world for remote client.
+     */
+    private void handleRemoteLoadWorld(BYOWServer server) {
+        GameState loaded = loadGame();
+        if (loaded != null) {
+            seed = loaded.seed;
+            world = loaded.world;
+            moveHistory = new StringBuilder(loaded.moveHistory);
+            avatar = new Avatar(loaded.avatarX, loaded.avatarY, world);
+            startGameLoop(server);
         }
     }
 }
