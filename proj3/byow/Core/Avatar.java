@@ -19,8 +19,13 @@ public class Avatar {
         world[x][y] = Tileset.AVATAR;
     }
 
-    public int getX() { return x; }
-    public int getY() { return y; }
+    public int getX() {
+        return x;
+    }
+
+    public int getY() {
+        return y;
+    }
 
     /**
      * Moves the avatar in the specified direction.
@@ -32,11 +37,20 @@ public class Avatar {
         int newY = y;
 
         switch (Character.toLowerCase(direction)) {
-            case 'w': newY += 1; break;
-            case 's': newY -= 1; break;
-            case 'a': newX -= 1; break;
-            case 'd': newX += 1; break;
-            default: return false;
+            case 'w':
+                newY += 1;
+                break;
+            case 's':
+                newY -= 1;
+                break;
+            case 'a':
+                newX -= 1;
+                break;
+            case 'd':
+                newX += 1;
+                break;
+            default:
+                return false;
         }
 
         // Check bounds

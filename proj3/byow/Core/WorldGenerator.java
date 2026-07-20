@@ -55,7 +55,9 @@ public class WorldGenerator {
         int numRooms = 6 + random.nextInt(7); // 6-12 rooms
 
         for (int i = 0; i < numRooms * 3; i++) { // Try more times than needed
-            if (rooms.size() >= numRooms) break;
+            if (rooms.size() >= numRooms) {
+                break;
+            }
 
             int w = 3 + random.nextInt(6); // width 3-8
             int h = 3 + random.nextInt(5); // height 3-7
@@ -95,7 +97,9 @@ public class WorldGenerator {
      * Connects all rooms with hallways using a simple approach.
      */
     private void connectRooms() {
-        if (rooms.size() < 2) return;
+        if (rooms.size() < 2) {
+            return;
+        }
 
         // Connect each room to the next one
         for (int i = 0; i < rooms.size() - 1; i++) {
@@ -208,7 +212,9 @@ public class WorldGenerator {
     private boolean isAdjacentToFloor(TETile[][] grid, int x, int y) {
         for (int dx = -1; dx <= 1; dx++) {
             for (int dy = -1; dy <= 1; dy++) {
-                if (dx == 0 && dy == 0) continue;
+                if (dx == 0 && dy == 0) {
+                    continue;
+                }
                 int nx = x + dx;
                 int ny = y + dy;
                 if (nx >= 0 && nx < width && ny >= 0 && ny < height) {

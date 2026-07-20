@@ -10,17 +10,38 @@ import java.io.Serializable;
 public class GameState implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    public long seed;
-    public int avatarX;
-    public int avatarY;
-    public TETile[][] world;
-    public String moveHistory;
+    private long seed;
+    private int avatarX;
+    private int avatarY;
+    private TETile[][] world;
+    private String moveHistory;
 
-    public GameState(long seed, int avatarX, int avatarY, TETile[][] world, String moveHistory) {
+    public GameState(long seed, int avatarX, int avatarY,
+                     TETile[][] world, String moveHistory) {
         this.seed = seed;
         this.avatarX = avatarX;
         this.avatarY = avatarY;
         this.world = world;
         this.moveHistory = moveHistory;
+    }
+
+    public long getSeed() {
+        return seed;
+    }
+
+    public int getAvatarX() {
+        return avatarX;
+    }
+
+    public int getAvatarY() {
+        return avatarY;
+    }
+
+    public TETile[][] getWorld() {
+        return world;
+    }
+
+    public String getMoveHistory() {
+        return moveHistory;
     }
 }

@@ -9,7 +9,6 @@ import edu.princeton.cs.introcs.StdDraw;
 import java.awt.Color;
 import java.awt.Font;
 import java.io.*;
-import java.util.Random;
 
 public class Engine {
     TERenderer ter = new TERenderer();
@@ -24,14 +23,10 @@ public class Engine {
     private StringBuilder moveHistory;
 
     /**
-     * Method used for exploring a fresh world. This method should handle all inputs,
-     * including inputs from the main menu.
+     * Method used for exploring a fresh world.
      */
     public void interactWithKeyboard() {
-        // Initialize StdDraw
         ter.initialize(WIDTH, HEIGHT + HUD_HEIGHT);
-
-        // Show main menu
         showMainMenu();
     }
 
@@ -42,7 +37,6 @@ public class Engine {
         gameRunning = true;
 
         while (gameRunning) {
-            // Draw menu
             StdDraw.clear(Color.BLACK);
             Font titleFont = new Font("Monaco", Font.BOLD, 40);
             Font menuFont = new Font("Monaco", Font.PLAIN, 20);
@@ -55,7 +49,6 @@ public class Engine {
             StdDraw.text(WIDTH / 2.0, HEIGHT / 2.0 - 4, "Quit (Q)");
             StdDraw.show();
 
-            // Handle input
             if (StdDraw.hasNextKeyTyped()) {
                 char key = Character.toLowerCase(StdDraw.nextKeyTyped());
                 switch (key) {
@@ -68,6 +61,8 @@ public class Engine {
                     case 'q':
                         gameRunning = false;
                         break;
+                    default:
+                        break;
                 }
             }
 
@@ -79,7 +74,6 @@ public class Engine {
      * Handles the new world creation process.
      */
     private void handleNewWorld() {
-        // Get seed from user
         StringBuilder seedInput = new StringBuilder();
         boolean enteringSeed = true;
 
@@ -104,10 +98,9 @@ public class Engine {
             StdDraw.pause(50);
         }
 
-        // Parse seed and create world
         if (seedInput.length() > 0) {
-            seed = Long.parseLong(seedInput.toString());
-            createWorld(seed);
+            this.seed = Long.parseLong(seedInput.toString());
+            createWorld(this.seed);
             startGameLoop(null);
         }
     }
@@ -118,10 +111,10 @@ public class Engine {
     private void handleLoadWorld() {
         GameState loaded = loadGame();
         if (loaded != null) {
-            seed = loaded.seed;
-            world = loaded.world;
-            moveHistory = new StringBuilder(loaded.moveHistory);
-            avatar = new Avatar(loaded.avatarX, loaded.avatarY, world);
+            this.seed = loaded.getSeed();
+            this.world = loaded.getWorld();
+            this.moveHistory = new StringBuilder(loaded.getMoveHistory());
+            this.avatar = new Avatar(loaded.getAvatarX(), loaded.getAvatarY(), this.world);
             startGameLoop(null);
         }
     }
@@ -129,11 +122,10 @@ public class Engine {
     /**
      * Creates a new world with the given seed.
      */
-    private void createWorld(long seed) {
-        WorldGenerator generator = new WorldGenerator(WIDTH, HEIGHT, seed);
+    private void createWorld(long worldSeed) {
+        WorldGenerator generator = new WorldGenerator(WIDTH, HEIGHT, worldSeed);
         world = generator.generate();
 
-        // Place avatar at the center of the first room
         if (generator.getRooms().size() > 0) {
             Room firstRoom = generator.getRooms().get(0);
             avatar = new Avatar(firstRoom.centerX(), firstRoom.centerY(), world);
@@ -149,80 +141,20 @@ public class Engine {
     private void startGameLoop(BYOWServer server) {
         ter.initialize(WIDTH, HEIGHT + HUD_HEIGHT);
 
-        // Send canvas config if remote
         if (server != null) {
             server.sendCanvasConfig(WIDTH * 16, (HEIGHT + HUD_HEIGHT) * 16);
             server.sendCanvas();
         }
 
         while (gameRunning) {
-            // Render world
             renderWorld();
 
-            // Send canvas to client if remote
             if (server != null) {
                 server.sendCanvas();
             }
 
-            // Handle input - from keyboard or remote client
-            boolean hasInput;
-            char key;
-
-            if (server != null) {
-                hasInput = server.clientHasKeyTyped();
-                if (hasInput) {
-                    key = server.clientNextKeyTyped();
-                } else {
-                    StdDraw.pause(50);
-                    continue;
-                }
-            } else {
-                hasInput = StdDraw.hasNextKeyTyped();
-                if (hasInput) {
-                    key = StdDraw.nextKeyTyped();
-                } else {
-                    StdDraw.pause(50);
-                    continue;
-                }
-            }
-
-            // Check for quit command
-            if (key == ':') {
-                boolean hasNext;
-                char nextKey;
-
-                if (server != null) {
-                    hasNext = server.clientHasKeyTyped();
-                    if (hasNext) {
-                        nextKey = server.clientNextKeyTyped();
-                    } else {
-                        continue;
-                    }
-                } else {
-                    hasNext = StdDraw.hasNextKeyTyped();
-                    if (hasNext) {
-                        nextKey = StdDraw.nextKeyTyped();
-                    } else {
-                        continue;
-                    }
-                }
-
-                if (Character.toLowerCase(nextKey) == 'q') {
-                    saveGame();
-                    if (server != null) {
-                        server.stopConnection();
-                    }
-                    gameRunning = false;
-                    return;
-                }
-            }
-
-            // Handle movement
-            if (Character.toLowerCase(key) == 'w' || Character.toLowerCase(key) == 'a' ||
-                Character.toLowerCase(key) == 's' || Character.toLowerCase(key) == 'd') {
-                if (avatar.move(key)) {
-                    moveHistory.append(key);
-                }
+            if (!processInput(server)) {
+                continue;
             }
 
             StdDraw.pause(50);
@@ -230,13 +162,85 @@ public class Engine {
     }
 
     /**
+     * Processes input from keyboard or remote client.
+     * @return true if input was processed
+     */
+    private boolean processInput(BYOWServer server) {
+        boolean hasInput;
+        char key;
+
+        if (server != null) {
+            hasInput = server.clientHasKeyTyped();
+            if (!hasInput) {
+                return false;
+            }
+            key = server.clientNextKeyTyped();
+        } else {
+            hasInput = StdDraw.hasNextKeyTyped();
+            if (!hasInput) {
+                return false;
+            }
+            key = StdDraw.nextKeyTyped();
+        }
+
+        if (key == ':') {
+            return handleQuitCommand(server);
+        }
+
+        handleMovement(key);
+        return true;
+    }
+
+    /**
+     * Handles quit command.
+     * @return true if command was processed
+     */
+    private boolean handleQuitCommand(BYOWServer server) {
+        boolean hasNext;
+        char nextKey;
+
+        if (server != null) {
+            hasNext = server.clientHasKeyTyped();
+            if (!hasNext) {
+                return false;
+            }
+            nextKey = server.clientNextKeyTyped();
+        } else {
+            hasNext = StdDraw.hasNextKeyTyped();
+            if (!hasNext) {
+                return false;
+            }
+            nextKey = StdDraw.nextKeyTyped();
+        }
+
+        if (Character.toLowerCase(nextKey) == 'q') {
+            saveGame();
+            if (server != null) {
+                server.stopConnection();
+            }
+            gameRunning = false;
+        }
+        return true;
+    }
+
+    /**
+     * Handles avatar movement.
+     */
+    private void handleMovement(char key) {
+        char lowerKey = Character.toLowerCase(key);
+        if (lowerKey == 'w' || lowerKey == 'a'
+                || lowerKey == 's' || lowerKey == 'd') {
+            if (avatar.move(key)) {
+                moveHistory.append(key);
+            }
+        }
+    }
+
+    /**
      * Renders the world and HUD.
      */
     private void renderWorld() {
-        // Draw world
         ter.renderFrame(world);
-
-        // Draw HUD
         drawHUD();
     }
 
@@ -244,12 +248,10 @@ public class Engine {
      * Draws the Heads Up Display.
      */
     private void drawHUD() {
-        // Draw HUD background
         StdDraw.setPenColor(Color.DARK_GRAY);
         StdDraw.filledRectangle(WIDTH / 2.0, HEIGHT + HUD_HEIGHT / 2.0,
-                               WIDTH / 2.0, HUD_HEIGHT / 2.0);
+                WIDTH / 2.0, HUD_HEIGHT / 2.0);
 
-        // Draw tile description under mouse
         Font hudFont = new Font("Monaco", Font.PLAIN, 14);
         StdDraw.setFont(hudFont);
         StdDraw.setPenColor(Color.WHITE);
@@ -263,9 +265,7 @@ public class Engine {
             StdDraw.text(10, HEIGHT + HUD_HEIGHT / 2.0, description);
         }
 
-        // Draw seed info
         StdDraw.text(WIDTH - 15, HEIGHT + HUD_HEIGHT / 2.0, "Seed: " + seed);
-
         StdDraw.show();
     }
 
@@ -273,12 +273,24 @@ public class Engine {
      * Returns a description for the given tile.
      */
     private String getTileDescription(TETile tile) {
-        if (tile == Tileset.FLOOR) return "floor";
-        if (tile == Tileset.WALL) return "wall";
-        if (tile == Tileset.AVATAR) return "you";
-        if (tile == Tileset.NOTHING) return "nothing";
-        if (tile == Tileset.LOCKED_DOOR) return "locked door";
-        if (tile == Tileset.UNLOCKED_DOOR) return "unlocked door";
+        if (tile == Tileset.FLOOR) {
+            return "floor";
+        }
+        if (tile == Tileset.WALL) {
+            return "wall";
+        }
+        if (tile == Tileset.AVATAR) {
+            return "you";
+        }
+        if (tile == Tileset.NOTHING) {
+            return "nothing";
+        }
+        if (tile == Tileset.LOCKED_DOOR) {
+            return "locked door";
+        }
+        if (tile == Tileset.UNLOCKED_DOOR) {
+            return "unlocked door";
+        }
         return "unknown";
     }
 
@@ -287,7 +299,7 @@ public class Engine {
      */
     private void saveGame() {
         GameState state = new GameState(seed, avatar.getX(), avatar.getY(),
-                                       world, moveHistory.toString());
+                world, moveHistory.toString());
         try {
             FileOutputStream fileOut = new FileOutputStream("savefile.txt");
             ObjectOutputStream out = new ObjectOutputStream(fileOut);
@@ -316,36 +328,26 @@ public class Engine {
     }
 
     /**
-     * Method used for autograding and testing your code. The input string will be a series
-     * of characters (for example, "n123sswwdasdassadwas", "n123sss:q", "lwww". The engine should
-     * behave exactly as if the user typed these characters into the engine using
-     * interactWithKeyboard.
-     *
+     * Method used for autograding and testing your code.
      * @param input the input string to feed to your program
      * @return the 2D TETile[][] representing the state of the world
      */
     public TETile[][] interactWithInputString(String input) {
-        // Parse input
         String lowerInput = input.toLowerCase();
 
-        // Check if it starts with 'l' (load)
         if (lowerInput.startsWith("l")) {
             GameState loaded = loadGame();
             if (loaded == null) {
-                return new TETile[WIDTH][HEIGHT]; // Return empty world if no save
+                return new TETile[WIDTH][HEIGHT];
             }
 
-            seed = loaded.seed;
-            world = loaded.world;
-            moveHistory = new StringBuilder(loaded.moveHistory);
-            avatar = new Avatar(loaded.avatarX, loaded.avatarY, world);
+            this.seed = loaded.getSeed();
+            this.world = loaded.getWorld();
+            this.moveHistory = new StringBuilder(loaded.getMoveHistory());
+            this.avatar = new Avatar(loaded.getAvatarX(), loaded.getAvatarY(), this.world);
 
-            // Process remaining input
-            processInput(lowerInput.substring(1));
-        }
-        // Check if it starts with 'n' (new world)
-        else if (lowerInput.startsWith("n")) {
-            // Find the seed (digits between 'n' and 's')
+            processInputString(lowerInput.substring(1));
+        } else if (lowerInput.startsWith("n")) {
             int sIndex = lowerInput.indexOf('s', 1);
             if (sIndex == -1) {
                 sIndex = lowerInput.length();
@@ -353,12 +355,11 @@ public class Engine {
 
             String seedStr = lowerInput.substring(1, sIndex);
             if (seedStr.length() > 0) {
-                seed = Long.parseLong(seedStr);
-                createWorld(seed);
+                this.seed = Long.parseLong(seedStr);
+                createWorld(this.seed);
 
-                // Process remaining input after 's'
                 if (sIndex < lowerInput.length()) {
-                    processInput(lowerInput.substring(sIndex + 1));
+                    processInputString(lowerInput.substring(sIndex + 1));
                 }
             }
         }
@@ -369,19 +370,17 @@ public class Engine {
     /**
      * Processes input characters for movement and commands.
      */
-    private void processInput(String input) {
+    private void processInputString(String input) {
         int i = 0;
         while (i < input.length()) {
             char c = input.charAt(i);
 
-            // Check for quit command
             if (c == ':' && i + 1 < input.length() && input.charAt(i + 1) == 'q') {
                 saveGame();
                 i += 2;
                 continue;
             }
 
-            // Handle movement
             if (c == 'w' || c == 'a' || c == 's' || c == 'd') {
                 avatar.move(c);
                 moveHistory.append(c);
@@ -392,8 +391,7 @@ public class Engine {
     }
 
     /**
-     * Method used for remote gameplay. This method creates a BYOWServer that listens for
-     * a client connection, then allows the remote client to play the game.
+     * Method used for remote gameplay.
      * @param portStr the port number as a string
      */
     public void interactWithRemoteClient(String portStr) {
@@ -401,10 +399,8 @@ public class Engine {
             int port = Integer.parseInt(portStr);
             BYOWServer server = new BYOWServer(port);
 
-            // Show main menu to remote client
             gameRunning = true;
             showRemoteMainMenu(server);
-
         } catch (IOException e) {
             System.out.println("Error starting server: " + e.getMessage());
             e.printStackTrace();
@@ -416,7 +412,6 @@ public class Engine {
      */
     private void showRemoteMainMenu(BYOWServer server) {
         while (gameRunning) {
-            // Draw menu
             StdDraw.clear(Color.BLACK);
             Font titleFont = new Font("Monaco", Font.BOLD, 40);
             Font menuFont = new Font("Monaco", Font.PLAIN, 20);
@@ -429,10 +424,8 @@ public class Engine {
             StdDraw.text(WIDTH / 2.0, HEIGHT / 2.0 - 4, "Quit (Q)");
             StdDraw.show();
 
-            // Send canvas to client
             server.sendCanvas();
 
-            // Handle input from remote client
             if (server.clientHasKeyTyped()) {
                 char key = Character.toLowerCase(server.clientNextKeyTyped());
                 switch (key) {
@@ -445,6 +438,8 @@ public class Engine {
                     case 'q':
                         server.stopConnection();
                         gameRunning = false;
+                        break;
+                    default:
                         break;
                 }
             }
@@ -469,7 +464,6 @@ public class Engine {
             StdDraw.text(WIDTH / 2.0, HEIGHT / 2.0, seedInput.toString() + "_");
             StdDraw.show();
 
-            // Send canvas to client
             server.sendCanvas();
 
             if (server.clientHasKeyTyped()) {
@@ -485,8 +479,8 @@ public class Engine {
         }
 
         if (seedInput.length() > 0) {
-            seed = Long.parseLong(seedInput.toString());
-            createWorld(seed);
+            this.seed = Long.parseLong(seedInput.toString());
+            createWorld(this.seed);
             startGameLoop(server);
         }
     }
@@ -497,10 +491,10 @@ public class Engine {
     private void handleRemoteLoadWorld(BYOWServer server) {
         GameState loaded = loadGame();
         if (loaded != null) {
-            seed = loaded.seed;
-            world = loaded.world;
-            moveHistory = new StringBuilder(loaded.moveHistory);
-            avatar = new Avatar(loaded.avatarX, loaded.avatarY, world);
+            this.seed = loaded.getSeed();
+            this.world = loaded.getWorld();
+            this.moveHistory = new StringBuilder(loaded.getMoveHistory());
+            this.avatar = new Avatar(loaded.getAvatarX(), loaded.getAvatarY(), this.world);
             startGameLoop(server);
         }
     }
