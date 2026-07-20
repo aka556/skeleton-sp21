@@ -1,6 +1,6 @@
 package gh2;
-import edu.princeton.cs.algs4.StdAudio;
-import edu.princeton.cs.algs4.StdDraw;
+import edu.princeton.cs.introcs.StdAudio;
+import edu.princeton.cs.introcs.StdDraw;
 
 /**
  * A client that uses the synthesizer package to replicate a plucked guitar string sound

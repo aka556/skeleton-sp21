@@ -15,7 +15,7 @@ public interface Deque<T> {
 
     T removeLast();
 
-    T get(int index);;
+    T get(int index);
 
     int size();
 

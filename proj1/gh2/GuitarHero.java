@@ -1,7 +1,7 @@
 package gh2;
 
-import edu.princeton.cs.algs4.StdAudio;
-import edu.princeton.cs.algs4.StdDraw;
+import edu.princeton.cs.introcs.StdAudio;
+import edu.princeton.cs.introcs.StdDraw;
 
 public class GuitarHero {
     public static final String KEYBOARD = "q2we4r5ty7u8i9op-[=zxdcfvgbnjmk,.;/' ";
@@ -20,7 +20,7 @@ public class GuitarHero {
                 char key = StdDraw.nextKeyTyped();
                 int index = KEYBOARD.indexOf(key);
 
-                if (index > 0) {
+                if (index >= 0) {
                     guitarStrings[index].pluck();
                 }
             }
