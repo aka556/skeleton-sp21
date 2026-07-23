@@ -109,12 +109,8 @@ public class Engine {
      * Handles loading a saved world.
      */
     private void handleLoadWorld() {
-        GameState loaded = loadGame();
-        if (loaded != null) {
-            this.seed = loaded.getSeed();
-            this.world = loaded.getWorld();
-            this.moveHistory = new StringBuilder(loaded.getMoveHistory());
-            this.avatar = new Avatar(loaded.getAvatarX(), loaded.getAvatarY(), this.world);
+        loadAndRestoreGame(null);
+        if (this.world != null) {
             startGameLoop(null);
         }
     }
@@ -298,8 +294,9 @@ public class Engine {
      * Saves the current game state.
      */
     private void saveGame() {
-        GameState state = new GameState(seed, avatar.getX(), avatar.getY(),
-                world, moveHistory.toString());
+        // Save current avatar position in move history
+        String fullHistory = avatar.getX() + "," + avatar.getY() + ";" + moveHistory.toString();
+        GameState state = new GameState(seed, fullHistory);
         try {
             FileOutputStream fileOut = new FileOutputStream("savefile.txt");
             ObjectOutputStream out = new ObjectOutputStream(fileOut);
@@ -312,7 +309,50 @@ public class Engine {
     }
 
     /**
-     * Loads a saved game state.
+     * Loads a saved game state and regenerates the world.
+     */
+    private void loadAndRestoreGame(String remainingInput) {
+        GameState loaded = loadGame();
+        if (loaded == null) {
+            this.world = createEmptyWorld();
+            return;
+        }
+
+        this.seed = loaded.getSeed();
+        String history = loaded.getMoveHistory();
+
+        // Parse avatar position and move history
+        int semicolonIndex = history.indexOf(';');
+        if (semicolonIndex > 0) {
+            String posStr = history.substring(0, semicolonIndex);
+            String moves = history.substring(semicolonIndex + 1);
+
+            // Parse avatar position
+            int commaIndex = posStr.indexOf(',');
+            int savedX = Integer.parseInt(posStr.substring(0, commaIndex));
+            int savedY = Integer.parseInt(posStr.substring(commaIndex + 1));
+
+            // Recreate world from seed
+            createWorld(this.seed);
+
+            // Replay moves up to saved position
+            this.moveHistory = new StringBuilder();
+            for (char c : moves.toCharArray()) {
+                if (c == 'w' || c == 'a' || c == 's' || c == 'd') {
+                    avatar.move(c);
+                    moveHistory.append(c);
+                }
+            }
+        }
+
+        // Process remaining input
+        if (remainingInput != null && remainingInput.length() > 0) {
+            processInputString(remainingInput);
+        }
+    }
+
+    /**
+     * Loads a saved game state from file.
      */
     private GameState loadGame() {
         try {
@@ -328,6 +368,19 @@ public class Engine {
     }
 
     /**
+     * Creates an empty world filled with NOTHING tiles.
+     */
+    private TETile[][] createEmptyWorld() {
+        TETile[][] emptyWorld = new TETile[WIDTH][HEIGHT];
+        for (int x = 0; x < WIDTH; x++) {
+            for (int y = 0; y < HEIGHT; y++) {
+                emptyWorld[x][y] = Tileset.NOTHING;
+            }
+        }
+        return emptyWorld;
+    }
+
+    /**
      * Method used for autograding and testing your code.
      * @param input the input string to feed to your program
      * @return the 2D TETile[][] representing the state of the world
@@ -336,17 +389,8 @@ public class Engine {
         String lowerInput = input.toLowerCase();
 
         if (lowerInput.startsWith("l")) {
-            GameState loaded = loadGame();
-            if (loaded == null) {
-                return new TETile[WIDTH][HEIGHT];
-            }
-
-            this.seed = loaded.getSeed();
-            this.world = loaded.getWorld();
-            this.moveHistory = new StringBuilder(loaded.getMoveHistory());
-            this.avatar = new Avatar(loaded.getAvatarX(), loaded.getAvatarY(), this.world);
-
-            processInputString(lowerInput.substring(1));
+            // Load game and process remaining input
+            loadAndRestoreGame(lowerInput.substring(1));
         } else if (lowerInput.startsWith("n")) {
             int sIndex = lowerInput.indexOf('s', 1);
             if (sIndex == -1) {
@@ -361,6 +405,14 @@ public class Engine {
                 if (sIndex < lowerInput.length()) {
                     processInputString(lowerInput.substring(sIndex + 1));
                 }
+            } else {
+                if (this.world == null) {
+                    this.world = createEmptyWorld();
+                }
+            }
+        } else {
+            if (this.world == null) {
+                this.world = createEmptyWorld();
             }
         }
 
@@ -489,12 +541,8 @@ public class Engine {
      * Handles loading a saved world for remote client.
      */
     private void handleRemoteLoadWorld(BYOWServer server) {
-        GameState loaded = loadGame();
-        if (loaded != null) {
-            this.seed = loaded.getSeed();
-            this.world = loaded.getWorld();
-            this.moveHistory = new StringBuilder(loaded.getMoveHistory());
-            this.avatar = new Avatar(loaded.getAvatarX(), loaded.getAvatarY(), this.world);
+        loadAndRestoreGame(null);
+        if (this.world != null) {
             startGameLoop(server);
         }
     }
